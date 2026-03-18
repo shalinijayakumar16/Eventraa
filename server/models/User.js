@@ -5,6 +5,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  registerNo: {              
+    type: String,
+    required: true,
+    unique: true
+  },
   email: {
     type: String,
     required: true,
@@ -18,7 +23,7 @@ const userSchema = new mongoose.Schema({
     type: String
   },
   year: {
-    type: Number
+    type: String
   },
   isActive: {
     type: Boolean,
