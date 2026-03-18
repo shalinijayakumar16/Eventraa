@@ -56,3 +56,36 @@ exports.loginUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+// 🔥 DEPARTMENT LOGIN
+exports.deptLogin = async (req, res) => {
+  const { deptId, password } = req.body;
+
+  const departments = [
+    { deptId: "CSE", password: "cse123" },
+    { deptId: "IT", password: "it123" },
+    { deptId: "ECE", password: "ece123" },
+    { deptId: "MECH", password: "mech123" },
+    { deptId: "CIVIL", password: "civil123" },
+    { deptId: "EEE", password: "eee123" },
+    { deptId: "BIO", password: "bio123" },
+    { deptId: "MBA", password: "mba123" },
+    { deptId: "MCA", password: "mca123" },
+    { deptId: "OTHER", password: "other123" }
+  ];
+
+  const dept = departments.find(
+    d => d.deptId === deptId && d.password === password
+  );
+
+  if (!dept) {
+    return res.status(400).json({ message: "Invalid credentials" });
+  }
+
+  res.json({
+    message: "Department login successful",
+    role: "department",
+    deptId
+  });
+};
