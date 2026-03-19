@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const upload = require("../middleware/upload");
 
 const {
   registerUser,
@@ -13,5 +14,8 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 // Department Login
 router.post("/dept-login", deptLogin);
+
+
+
 
 module.exports = router;
