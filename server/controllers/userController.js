@@ -85,7 +85,7 @@ exports.deptLogin = async (req, res) => {
 
   res.json({
     message: "Department login successful",
-    role: "department",
-    deptId
+    department: dept.deptId,
+    
   });
 };
