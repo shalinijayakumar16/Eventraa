@@ -32,7 +32,11 @@ const eventSchema = new mongoose.Schema({
   
   registrationLink: {
     type: String
-  }
+  },
+  status: {
+  type: String,
+  default: "active"
+}
 
 }, { timestamps: true });
 

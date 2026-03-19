@@ -2,6 +2,8 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const cron = require("node-cron");
+const Event = require("./models/Event");
 
 dotenv.config();
 
@@ -19,7 +21,24 @@ app.use("/uploads", express.static("uploads"));
 
 // Routes
 app.use("/api/events", require("./routes/eventRoutes"));
-app.use("/api/users", require("./routes/userRoutes")); // ✅ moved here (IMPORTANT)
+app.use("/api/users", require("./routes/userRoutes"));
+
+// 🔥 CRON JOB — mark expired events
+// TEST MODE (runs every 1 minute)
+cron.schedule("* * * * *", async () => {
+  console.log("CRON RUNNING...");
+
+  try {
+    await Event.updateMany(
+      { date: { $lt: new Date() } },
+      { status: "expired" }
+    );
+
+    console.log("Expired events updated");
+  } catch (error) {
+    console.log("Cron error:", error.message);
+  }
+});
 
 // Test route
 app.get("/", (req, res) => {

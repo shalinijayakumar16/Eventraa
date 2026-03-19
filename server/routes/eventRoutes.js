@@ -12,7 +12,7 @@ router.get("/", controller.getAllEvents);
 router.get("/dept/:dept", controller.getEventsByDept);
 
 // UPDATE
-router.put("/:id", controller.updateEvent);
+router.put("/:id", upload.single("poster"), controller.updateEvent);
 
 // DELETE
 router.delete("/:id", controller.deleteEvent);

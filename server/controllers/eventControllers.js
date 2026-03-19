@@ -5,7 +5,7 @@ exports.createEvent = async (req, res) => {
   try {
     const eventData = {
       ...req.body,
-      poster: req.file ? req.file.path : null
+      poster: req.file ? req.file.path.replace(/\\/g, "/") : null // ✅ keep image working
     };
 
     const event = await Event.create(eventData);
@@ -16,34 +16,51 @@ exports.createEvent = async (req, res) => {
   }
 };
 
-// GET ALL EVENTS
+// GET ALL EVENTS (ONLY ACTIVE)
 exports.getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find();
+    const events = await Event.find({
+      status: "active" // ✅ filter expired
+    });
+
     res.json(events);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// GET EVENTS BY DEPARTMENT
+// GET EVENTS BY DEPARTMENT (ONLY ACTIVE)
 exports.getEventsByDept = async (req, res) => {
   try {
-    const events = await Event.find({ department: req.params.dept });
+    const events = await Event.find({
+      department: req.params.dept,
+      status: "active" // ✅ filter expired
+    });
+
     res.json(events);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// UPDATE EVENT
+// UPDATE EVENT (with optional poster update)
 exports.updateEvent = async (req, res) => {
   try {
+    const updateData = {
+      ...req.body
+    };
+
+    // if new image uploaded
+    if (req.file) {
+      updateData.poster = req.file.path.replace(/\\/g, "/");
+    }
+
     const updated = await Event.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true }
     );
+
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
