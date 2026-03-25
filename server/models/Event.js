@@ -19,8 +19,8 @@ const eventSchema = new mongoose.Schema({
     type: String
   },
   type: {
-  type: String   // Technical, Workshop, Non-Technical
-},
+    type: String   // Technical, Workshop, Non-Technical
+  },
   departmentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Department"
@@ -32,14 +32,30 @@ const eventSchema = new mongoose.Schema({
     type: String
   },
 
-  
   registrationLink: {
     type: String
   },
+
+  // 🔥 NEW FEATURE (IMPORTANT)
+  formFields: [
+    {
+      label: {
+        type: String
+      },
+      type: {
+        type: String
+      },
+      required: {
+        type: Boolean,
+        default: false
+      }
+    }
+  ],
+
   status: {
-  type: String,
-  default: "active"
-}
+    type: String,
+    default: "active"
+  }
 
 }, { timestamps: true });
 

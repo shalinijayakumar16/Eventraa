@@ -3,9 +3,21 @@ const Event = require("../models/Event");
 // CREATE EVENT (with poster)
 exports.createEvent = async (req, res) => {
   try {
+    let formFields = [];
+
+    // 🔥 Parse dynamic form fields
+    if (req.body.formFields) {
+      try {
+        formFields = JSON.parse(req.body.formFields);
+      } catch (err) {
+        return res.status(400).json({ message: "Invalid formFields format" });
+      }
+    }
+
     const eventData = {
       ...req.body,
-      poster: req.file ? req.file.path.replace(/\\/g, "/") : null // ✅ keep image working
+      formFields, // ✅ store parsed form fields
+      poster: req.file ? req.file.path.replace(/\\/g, "/") : null
     };
 
     const event = await Event.create(eventData);
@@ -59,11 +71,19 @@ exports.getEventsByDept = async (req, res) => {
 // UPDATE EVENT (with optional poster update)
 exports.updateEvent = async (req, res) => {
   try {
-    const updateData = {
+    let updateData = {
       ...req.body
     };
 
-    // if new image uploaded
+    // 🔥 Parse formFields if present
+    if (req.body.formFields) {
+      try {
+        updateData.formFields = JSON.parse(req.body.formFields);
+      } catch (err) {
+        return res.status(400).json({ message: "Invalid formFields format" });
+      }
+    }
+
     if (req.file) {
       updateData.poster = req.file.path.replace(/\\/g, "/");
     }
