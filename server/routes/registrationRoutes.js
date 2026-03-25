@@ -3,13 +3,15 @@ const router = express.Router();
 
 const {
   registerEvent,
-  getMyEvents
+  getMyEvents,
+  getEventRegistrations // 🔥 ADD
 } = require("../controllers/registrationController");
 
-// POST → register
+// existing
 router.post("/register", registerEvent);
-
-// GET → my events
 router.get("/my-events/:userId", getMyEvents);
+
+// 🔥 NEW ROUTE
+router.get("/event-registrations/:eventId", getEventRegistrations);
 
 module.exports = router;

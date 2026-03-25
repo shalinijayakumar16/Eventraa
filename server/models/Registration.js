@@ -10,7 +10,13 @@ const registrationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Event",
     required: true
+  },
+  answers: [
+  {
+    question: String,
+    answer: String
   }
+]
 }, { timestamps: true });
 
 module.exports = mongoose.model("Registration", registrationSchema);
