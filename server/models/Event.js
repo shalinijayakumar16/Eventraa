@@ -18,6 +18,9 @@ const eventSchema = new mongoose.Schema({
   department: {
     type: String
   },
+  type: {
+  type: String   // Technical, Workshop, Non-Technical
+},
   departmentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Department"

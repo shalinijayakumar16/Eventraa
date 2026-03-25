@@ -19,9 +19,22 @@ exports.createEvent = async (req, res) => {
 // GET ALL EVENTS (ONLY ACTIVE)
 exports.getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find({
-      status: "active" // ✅ filter expired
-    });
+    const { department, type } = req.query;
+
+    let filter = {
+      status: "active"
+    };
+
+    // ✅ Optional filters
+    if (department) {
+      filter.department = department;
+    }
+
+    if (type) {
+      filter.type = type;
+    }
+
+    const events = await Event.find(filter);
 
     res.json(events);
   } catch (err) {
