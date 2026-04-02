@@ -1,0 +1,32 @@
+/* Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* HTML */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Body */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #0f172a; /* dark theme */
+  color: #e2e8f0;
+}
+
+/* Remove default link styles */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Smooth buttons */
+button {
+  transition: all 0.2s ease-in-out;
+}
