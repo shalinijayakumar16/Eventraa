@@ -1,11 +1,10 @@
 const Event = require("../models/Event");
 
-// CREATE EVENT (with poster)
+// ✅ CREATE EVENT (with poster + formFields + applyBy)
 exports.createEvent = async (req, res) => {
   try {
     let formFields = [];
 
-    // 🔥 Parse dynamic form fields
     if (req.body.formFields) {
       try {
         formFields = JSON.parse(req.body.formFields);
@@ -16,7 +15,7 @@ exports.createEvent = async (req, res) => {
 
     const eventData = {
       ...req.body,
-      formFields, // ✅ store parsed form fields
+      formFields,
       poster: req.file ? req.file.path.replace(/\\/g, "/") : null
     };
 
@@ -28,54 +27,93 @@ exports.createEvent = async (req, res) => {
   }
 };
 
-// GET ALL EVENTS (ONLY ACTIVE)
+
+
+// ✅ GET ALL EVENTS (ACTIVE + EXPIRED based on applyBy)
 exports.getAllEvents = async (req, res) => {
   try {
     const { department, type } = req.query;
 
-    let filter = {
-      status: "active"
-    };
+    let filter = {};
 
-    // ✅ Optional filters
-    if (department) {
-      filter.department = department;
-    }
-
-    if (type) {
-      filter.type = type;
-    }
+    if (department) filter.department = department;
+    if (type) filter.type = type;
 
     const events = await Event.find(filter);
 
-    res.json(events);
+    const now = new Date();
+
+    const active = [];
+    const expired = [];
+
+    events.forEach(e => {
+      const isExpired = new Date(e.applyBy) < now;
+
+      const eventObj = {
+        ...e._doc,
+        status: isExpired ? "expired" : "active"
+      };
+
+      if (isExpired) expired.push(eventObj);
+      else active.push(eventObj);
+    });
+
+    res.json({
+      active,
+      expired,
+      total: events.length
+    });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// GET EVENTS BY DEPARTMENT (ONLY ACTIVE)
+
+
+// ✅ GET EVENTS BY DEPARTMENT (ACTIVE + EXPIRED)
 exports.getEventsByDept = async (req, res) => {
   try {
     const events = await Event.find({
-      department: req.params.dept,
-      status: "active" // ✅ filter expired
+      department: req.params.dept
     });
 
-    res.json(events);
+    const now = new Date();
+
+    const active = [];
+    const expired = [];
+
+    events.forEach(e => {
+      const isExpired = new Date(e.applyBy) < now;
+
+      const eventObj = {
+        ...e._doc,
+        status: isExpired ? "expired" : "active"
+      };
+
+      if (isExpired) expired.push(eventObj);
+      else active.push(eventObj);
+    });
+
+    res.json({
+      active,
+      expired,
+      total: events.length
+    });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// UPDATE EVENT (with optional poster update)
+
+
+// ✅ UPDATE EVENT
 exports.updateEvent = async (req, res) => {
   try {
-    let updateData = {
-      ...req.body
-    };
+    let updateData = { ...req.body };
 
-    // 🔥 Parse formFields if present
+    // Handle formFields parsing
     if (req.body.formFields) {
       try {
         updateData.formFields = JSON.parse(req.body.formFields);
@@ -84,6 +122,7 @@ exports.updateEvent = async (req, res) => {
       }
     }
 
+    // Handle poster update
     if (req.file) {
       updateData.poster = req.file.path.replace(/\\/g, "/");
     }
@@ -100,7 +139,9 @@ exports.updateEvent = async (req, res) => {
   }
 };
 
-// DELETE EVENT
+
+
+// ✅ DELETE EVENT
 exports.deleteEvent = async (req, res) => {
   try {
     await Event.findByIdAndDelete(req.params.id);
