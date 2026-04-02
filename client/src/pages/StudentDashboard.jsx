@@ -394,15 +394,15 @@ const TYPE_STYLE = {
 
 /* ─── Main Component ─────────────────────────────────────────────────────── */
 function StudentDashboard() {
-  const [events, setEvents]             = useState([]);
-  const [department, setDepartment]     = useState("");
-  const [type, setType]                 = useState("");
-  const [myEvents, setMyEvents]         = useState([]);
-  const [user, setUser]                 = useState(null);
-  const [showProfile, setShowProfile]   = useState(false);
-  const [showForm, setShowForm]         = useState(false);
+  const [events, setEvents]               = useState([]);
+  const [department, setDepartment]       = useState("");
+  const [type, setType]                   = useState("");
+  const [myEvents, setMyEvents]           = useState([]);
+  const [user, setUser]                   = useState(null);
+  const [showProfile, setShowProfile]     = useState(false);
+  const [showForm, setShowForm]           = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [formValues, setFormValues]     = useState({});
+  const [formValues, setFormValues]       = useState({});
 
   const userId = localStorage.getItem("userId");
 
@@ -416,10 +416,15 @@ function StudentDashboard() {
       if (type) url += `type=${type}`;
       const res  = await fetch(url);
       const data = await res.json();
+
+      // ── FIXED: backend now returns { active, expired } not { upcoming, past }
       if (Array.isArray(data)) {
         setEvents(data);
       } else {
-        setEvents([...(data.upcoming || []), ...(data.past || [])]);
+        setEvents([
+          ...(data.active  || []),
+          ...(data.expired || []),
+        ]);
       }
     } catch (err) { console.log(err); setEvents([]); }
   };
@@ -468,6 +473,11 @@ function StudentDashboard() {
     localStorage.removeItem("userId");
     window.location.href = "/";
   };
+
+  // ── FIXED: derive counts from the single source of truth ─────────────────
+  const totalEvents      = events.length;
+  const registeredCount  = myEvents.length;
+  const departmentCount  = [...new Set(events.map(e => e.department))].filter(Boolean).length;
 
   return (
     <>
@@ -603,7 +613,8 @@ function StudentDashboard() {
             {myEvents.length > 0 && (
               <div style={{ marginTop: "auto", paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                 <div style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.18)", textAlign: "center" }}>
-                  <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 24, color: "#A5B4FC" }}>{myEvents.length}</div>
+                  {/* ── FIXED: uses registeredCount ── */}
+                  <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 24, color: "#A5B4FC" }}>{registeredCount}</div>
                   <div style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>events joined</div>
                 </div>
               </div>
@@ -624,12 +635,12 @@ function StudentDashboard() {
               </p>
             </div>
 
-            {/* Stats row */}
+            {/* ── Stats row — FIXED: uses derived counts ── */}
             <div className="stats-row animate-fadeUp" style={{ display: "flex", gap: 12, marginBottom: 28, animationDelay: "0.1s" }}>
               {[
-                { label: "Total Events", val: events.length, icon: "calendar", color: "#6366F1" },
-                { label: "Registered",   val: myEvents.length, icon: "check",   color: "#EC4899" },
-                { label: "Departments",  val: [...new Set(events.map(e => e.department))].filter(Boolean).length, icon: "filter", color: "#8B5CF6" },
+                { label: "Total Events", val: totalEvents,     icon: "calendar", color: "#6366F1" },
+                { label: "Registered",   val: registeredCount, icon: "check",    color: "#EC4899" },
+                { label: "Departments",  val: departmentCount, icon: "filter",   color: "#8B5CF6" },
               ].map((s, i) => (
                 <div key={i} className="stat-pill" style={{ animationDelay: `${i * 0.07}s` }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: `${s.color}22`, border: `1px solid ${s.color}44`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -658,8 +669,9 @@ function StudentDashboard() {
                 <option value="Workshop">Workshop</option>
                 <option value="Seminar">Seminar</option>
               </select>
+              {/* ── FIXED: uses totalEvents ── */}
               <div style={{ marginLeft: "auto", fontSize: 13, color: "#475569", fontFamily: "'DM Sans', sans-serif" }}>
-                {events.length} event{events.length !== 1 ? "s" : ""} found
+                {totalEvents} event{totalEvents !== 1 ? "s" : ""} found
               </div>
             </div>
 
