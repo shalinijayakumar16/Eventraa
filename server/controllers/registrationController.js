@@ -1,21 +1,37 @@
 const Registration = require("../models/Registration");
+const User = require("../models/User");
+const mongoose = require("mongoose");
 
-// ✅ Register for event (UPDATED)
+// ✅ Register for event
 exports.registerEvent = async (req, res) => {
   try {
     const { userId, eventId, answers } = req.body;
 
-    // prevent duplicate
+    // 🔥 fetch user using userId
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 🚫 prevent duplicate
     const already = await Registration.findOne({ userId, eventId });
 
     if (already) {
       return res.status(400).json({ message: "Already registered" });
     }
 
+    // ✅ create registration
     const reg = await Registration.create({
       userId,
       eventId,
-      answers // 🔥 IMPORTANT
+
+      name: user.name,
+      department: user.department,
+      year: user.year,
+      registerNo: user.registerNo,
+
+      answers
     });
 
     res.json(reg);
@@ -23,7 +39,6 @@ exports.registerEvent = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-const mongoose = require("mongoose");
 
 // ✅ Get registrations for a specific event
 exports.getEventRegistrations = async (req, res) => {
@@ -32,13 +47,14 @@ exports.getEventRegistrations = async (req, res) => {
 
     const data = await Registration.find({
       eventId: new mongoose.Types.ObjectId(eventId)
-    });
+    }).select("name department year registerNo");
 
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 // ✅ Get user's registered events
 exports.getMyEvents = async (req, res) => {
   try {

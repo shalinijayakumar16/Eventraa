@@ -173,7 +173,7 @@ const STYLES = `
   }
   .btn-regs:active { transform: translateY(0); }
 
-  /* Logout button — sits in the topbar */
+  /* Logout button */
   .btn-logout {
     background: rgba(239,68,68,0.08);
     color: #FCA5A5;
@@ -198,6 +198,32 @@ const STYLES = `
     box-shadow: 0 4px 16px rgba(239,68,68,0.2);
   }
   .btn-logout:active { transform: translateY(0); }
+
+  /* Export Excel button */
+  .btn-export {
+    background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(16,185,129,0.1));
+    color: #6EE7B7;
+    border: 1px solid rgba(34,197,94,0.3);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+  }
+  .btn-export:hover {
+    background: linear-gradient(135deg, rgba(34,197,94,0.25), rgba(16,185,129,0.18));
+    border-color: rgba(34,197,94,0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(34,197,94,0.2);
+  }
+  .btn-export:active { transform: translateY(0); }
+  .btn-export:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
   .event-card {
     background: rgba(255,255,255,0.035);
@@ -358,6 +384,55 @@ const STYLES = `
     border-color: rgba(236,72,153,0.2);
   }
 
+  /* Profile field grid inside reg card */
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .profile-field {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .profile-field-key {
+    font-size: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+  .profile-field-val {
+    font-size: 14px;
+    color: #E2E8F0;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+  }
+
+  /* Collapsible answers summary */
+  .answers-summary {
+    cursor: pointer;
+    font-size: 12px;
+    color: #64748B;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    list-style: none;
+    user-select: none;
+    transition: background 0.2s, color 0.2s;
+  }
+  .answers-summary:hover { background: rgba(255,255,255,0.06); color: #94A3B8; }
+  .answers-summary::-webkit-details-marker { display: none; }
+
   /* Answer pill row */
   .answer-row {
     display: flex;
@@ -486,6 +561,8 @@ const STYLES = `
     .btn-logout span { display: none; }
     .field-row { grid-template-columns: 1fr; }
     .card-actions { flex-wrap: wrap !important; }
+    .profile-grid { grid-template-columns: 1fr !important; }
+    .regs-header-right { flex-wrap: wrap !important; }
   }
   @media (max-width: 1024px) {
     .events-grid { grid-template-columns: 1fr 1fr !important; }
@@ -511,6 +588,7 @@ const Icon = ({ name, size = 18, color = "currentColor" }) => {
     users: (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>),
     inbox: (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>),
     clock: (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>),
+    download: (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>),
   };
   return icons[name] || null;
 };
@@ -550,6 +628,7 @@ function DeptDashboard() {
   const [loading, setLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [view, setView] = useState("my");
+  const [exportLoading, setExportLoading] = useState(false);
 
   const [form, setForm] = useState({ title: "", description: "", date: "", venue: "", applyBy: "" });
   const [file, setFile] = useState(null);
@@ -561,7 +640,6 @@ function DeptDashboard() {
   const [regsLoading, setRegsLoading] = useState(false);
   const [regsEventTitle, setRegsEventTitle] = useState("");
 
-  // ── ADDED: eventFilter state ──────────────────────────────────────────────
   const [eventFilter, setEventFilter] = useState("all");
 
   const dept = localStorage.getItem("deptId");
@@ -595,7 +673,6 @@ function DeptDashboard() {
         : `http://localhost:5000/api/events`;
       const res = await fetch(url);
       const data = await res.json();
-      console.log("EVENT DATA:", data);
       setUpcomingEvents(Array.isArray(data.active) ? data.active : []);
       setPastEvents(Array.isArray(data.expired) ? data.expired : []);
     } catch (err) {
@@ -606,8 +683,6 @@ function DeptDashboard() {
   };
 
   useEffect(() => { fetchEvents(); }, [view]);
-
-  // ── ADDED: reset filter when switching My/All views ───────────────────────
   useEffect(() => { setEventFilter("all"); }, [view]);
 
   const deleteEvent = async (id) => {
@@ -635,6 +710,58 @@ function DeptDashboard() {
     setShowRegs(false);
     setRegistrations([]);
     setRegsEventTitle("");
+  };
+
+  /* ── Export to Excel ─────────────────────────────────────────────────────── */
+  const exportRegistrations = async () => {
+    if (!registrations.length || exportLoading) return;
+    setExportLoading(true);
+    try {
+      // Collect all unique answer question keys across all registrants
+      const allQuestions = [
+        ...new Set(
+          registrations.flatMap(r => (r.answers || []).map(a => a.question))
+        ),
+      ];
+
+      // Build flat row objects: core fields first, then dynamic answer columns
+      const rows = registrations.map((r, i) => {
+        const row = {
+          "#": i + 1,
+          "Name": r.name || "",
+          "Register No": r.registerNo || "",
+          "Department": r.department || "",
+          "Year": r.year || "",
+          "Submitted At": r.submittedAt
+            ? new Date(r.submittedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+            : "",
+        };
+        allQuestions.forEach(q => {
+          const found = (r.answers || []).find(a => a.question === q);
+          row[q] = found ? (found.answer || "") : "";
+        });
+        return row;
+      });
+
+      // Dynamically import SheetJS (no install needed)
+      const XLSX = await import("https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs");
+      const ws = XLSX.utils.json_to_sheet(rows);
+
+      // Auto-width columns
+      const colWidths = Object.keys(rows[0] || {}).map(key => ({
+        wch: Math.max(key.length, ...rows.map(r => String(r[key] || "").length)) + 2,
+      }));
+      ws["!cols"] = colWidths;
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Registrations");
+      XLSX.writeFile(wb, `${regsEventTitle.replace(/\s+/g, "_")}_registrations.xlsx`);
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Export failed. Please try again.");
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   /* ── Submit (create / edit) ──────────────────────────────────────────────── */
@@ -706,15 +833,11 @@ function DeptDashboard() {
     setFormFields([]);
   };
 
-  // ── ADDED: derive displayEvents from eventFilter ──────────────────────────
+  /* ── Derive display list from filter ────────────────────────────────────── */
   let displayEvents = [];
-  if (eventFilter === "upcoming") {
-    displayEvents = upcomingEvents;
-  } else if (eventFilter === "past") {
-    displayEvents = pastEvents;
-  } else {
-    displayEvents = [...upcomingEvents, ...pastEvents];
-  }
+  if (eventFilter === "upcoming") displayEvents = upcomingEvents;
+  else if (eventFilter === "past")  displayEvents = pastEvents;
+  else                              displayEvents = [...upcomingEvents, ...pastEvents];
 
   return (
     <>
@@ -792,7 +915,7 @@ function DeptDashboard() {
             </div>
           </div>
 
-          {/* ── Stats row — clicking a pill filters the grid ── */}
+          {/* ── Stats row ── */}
           <div className="stats-row animate-fadeUp" style={{ display: "flex", gap: 14, marginBottom: 32, animationDelay: "0.1s", flexWrap: "wrap" }}>
             {[
               { label: "Total Events", val: upcomingEvents.length + pastEvents.length, filter: "all",      icon: "calendar", color: "#6366F1" },
@@ -838,7 +961,7 @@ function DeptDashboard() {
             </button>
           </div>
 
-          {/* ── Events grid — uses displayEvents ── */}
+          {/* ── Events grid ── */}
           {loading ? (
             <div style={{ textAlign: "center", padding: 80, color: "#475569" }}>
               <div style={{ width: 40, height: 40, border: "2px solid rgba(99,102,241,0.3)", borderTopColor: "#6366F1", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
@@ -867,7 +990,6 @@ function DeptDashboard() {
             </div>
           ) : (
             <div className="events-grid animate-fadeUp" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, animationDelay: "0.2s" }}>
-              {/* ── CHANGED: render displayEvents instead of [...upcomingEvents, ...pastEvents] ── */}
               {displayEvents.map((ev, idx) => {
                 const isPast = new Date(ev.date) < new Date();
                 return (
@@ -1128,6 +1250,8 @@ function DeptDashboard() {
         {showRegs && (
           <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeRegs(); }}>
             <div className="modal-box-wide">
+
+              {/* Header */}
               <div style={{
                 padding: "24px 28px 20px",
                 borderBottom: "1px solid rgba(255,255,255,0.07)",
@@ -1157,16 +1281,37 @@ function DeptDashboard() {
                   )}
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                {/* Right actions: Export + count badge + close */}
+                <div className="regs-header-right" style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                   {!regsLoading && registrations.length > 0 && (
-                    <div style={{
-                      display: "flex", alignItems: "center", gap: 7,
-                      padding: "6px 14px", borderRadius: 10,
-                      background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.22)",
-                    }}>
-                      <Icon name="users" size={14} color="#F9A8D4" />
-                      <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 15, color: "#F9A8D4" }}>{registrations.length}</span>
-                    </div>
+                    <>
+                      <button
+                        className="btn-export"
+                        onClick={exportRegistrations}
+                        disabled={exportLoading}
+                      >
+                        {exportLoading ? (
+                          <>
+                            <div style={{ width: 13, height: 13, border: "2px solid rgba(110,231,183,0.3)", borderTopColor: "#6EE7B7", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+                            Exporting...
+                          </>
+                        ) : (
+                          <>
+                            <Icon name="download" size={14} color="#6EE7B7" />
+                            Export Excel
+                          </>
+                        )}
+                      </button>
+
+                      <div style={{
+                        display: "flex", alignItems: "center", gap: 7,
+                        padding: "6px 14px", borderRadius: 10,
+                        background: "rgba(236,72,153,0.1)", border: "1px solid rgba(236,72,153,0.22)",
+                      }}>
+                        <Icon name="users" size={14} color="#F9A8D4" />
+                        <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 15, color: "#F9A8D4" }}>{registrations.length}</span>
+                      </div>
+                    </>
                   )}
                   <button
                     onClick={closeRegs}
@@ -1184,6 +1329,7 @@ function DeptDashboard() {
                 </div>
               </div>
 
+              {/* Body */}
               <div style={{ padding: "20px 28px 28px" }}>
                 {regsLoading ? (
                   <div style={{ textAlign: "center", padding: "52px 0", color: "#475569" }}>
@@ -1212,7 +1358,9 @@ function DeptDashboard() {
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {registrations.map((r, i) => (
                       <div key={i} className="reg-card">
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+
+                        {/* Card header: number + date */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
                           <div style={{
                             width: 26, height: 26, borderRadius: 8, flexShrink: 0,
                             background: "linear-gradient(135deg, rgba(99,102,241,0.25), rgba(236,72,153,0.2))",
@@ -1232,33 +1380,61 @@ function DeptDashboard() {
                           )}
                         </div>
 
-                        {r.answers && r.answers.length > 0 ? (
-                          <div>
-                            {r.answers.map((a, idx) => (
-                              <div key={idx} className="answer-row">
-                                <div style={{ minWidth: 110, fontSize: 12, fontFamily: "'Outfit', sans-serif", fontWeight: 600, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.04em", paddingTop: 1, flexShrink: 0 }}>
-                                  {a.question}
-                                </div>
-                                <div style={{ fontSize: 13, color: "#CBD5E1", fontFamily: "'DM Sans', sans-serif", wordBreak: "break-word" }}>
-                                  {a.answer || <span style={{ color: "#334155", fontStyle: "italic" }}>—</span>}
-                                </div>
+                        {/* ── Core profile fields: 2×2 grid ── */}
+                        <div
+                          className="profile-grid"
+                          style={{ marginBottom: r.answers && r.answers.length > 0 ? 14 : 0 }}
+                        >
+                          {[
+                            { label: "Name",        val: r.name },
+                            { label: "Register No", val: r.registerNo },
+                            { label: "Department",  val: r.department },
+                            { label: "Year",        val: r.year },
+                          ].map(({ label, val }) => (
+                            <div key={label} className="profile-field">
+                              <div className="profile-field-key">{label}</div>
+                              <div className="profile-field-val" style={{ color: val ? "#E2E8F0" : "#334155", fontStyle: val ? "normal" : "italic" }}>
+                                {val || "—"}
                               </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div style={{ fontSize: 13, color: "#475569", fontStyle: "italic", fontFamily: "'DM Sans', sans-serif" }}>No answers recorded</div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* ── Collapsible extra answers ── */}
+                        {r.answers && r.answers.length > 0 && (
+                          <details>
+                            <summary className="answers-summary">
+                              <Icon name="list" size={12} color="#64748B" />
+                              {r.answers.length} additional answer{r.answers.length !== 1 ? "s" : ""}
+                            </summary>
+                            <div style={{ marginTop: 10 }}>
+                              {r.answers.map((a, idx) => (
+                                <div key={idx} className="answer-row">
+                                  <div style={{ minWidth: 110, fontSize: 11, fontFamily: "'Outfit', sans-serif", fontWeight: 600, color: "#64748B", textTransform: "uppercase", letterSpacing: "0.04em", paddingTop: 1, flexShrink: 0 }}>
+                                    {a.question}
+                                  </div>
+                                  <div style={{ fontSize: 13, color: "#CBD5E1", fontFamily: "'DM Sans', sans-serif", wordBreak: "break-word" }}>
+                                    {a.answer || <span style={{ color: "#334155", fontStyle: "italic" }}>—</span>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </details>
                         )}
+
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
+              {/* Footer */}
               <div style={{ padding: "0 28px 24px", display: "flex", justifyContent: "flex-end" }}>
                 <button className="btn-ghost" onClick={closeRegs} style={{ padding: "10px 24px" }}>
                   Close
                 </button>
               </div>
+
             </div>
           </div>
         )}
@@ -1268,6 +1444,5 @@ function DeptDashboard() {
     </>
   );
 }
-console.log("GIT TEST CHANGE");
 
 export default DeptDashboard;

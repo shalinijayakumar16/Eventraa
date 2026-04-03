@@ -17,4 +17,6 @@ router.put("/:id", upload.single("poster"), controller.updateEvent);
 // DELETE
 router.delete("/:id", controller.deleteEvent);
 
+
+
 module.exports = router;
