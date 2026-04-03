@@ -1,4 +1,5 @@
 const Event = require("../models/Event");
+const Registration = require("../models/Registration");
 
 // ✅ CREATE EVENT (with poster + formFields + applyBy)
 exports.createEvent = async (req, res) => {
@@ -32,15 +33,24 @@ exports.createEvent = async (req, res) => {
 // ✅ GET ALL EVENTS (ACTIVE + EXPIRED based on applyBy)
 exports.getAllEvents = async (req, res) => {
   try {
-    const { department, type } = req.query;
+    const { department, type, userId } = req.query;
 
     let filter = {};
-
     if (department) filter.department = department;
     if (type) filter.type = type;
 
     const events = await Event.find(filter);
 
+    // 🔥 NEW: get user registrations
+    let registeredEventIds = [];
+
+    if (userId) {
+      const registrations = await Registration.find({ userId });
+      registeredEventIds = registrations.map(r =>
+        r.eventId.toString()
+      );
+    }
+
     const now = new Date();
 
     const active = [];
@@ -51,7 +61,8 @@ exports.getAllEvents = async (req, res) => {
 
       const eventObj = {
         ...e._doc,
-        status: isExpired ? "expired" : "active"
+        status: isExpired ? "expired" : "active",
+        isRegistered: registeredEventIds.includes(e._id.toString()) // ✅ FIX
       };
 
       if (isExpired) expired.push(eventObj);
@@ -68,15 +79,25 @@ exports.getAllEvents = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 
 // ✅ GET EVENTS BY DEPARTMENT (ACTIVE + EXPIRED)
 exports.getEventsByDept = async (req, res) => {
   try {
+    const { userId } = req.query; // ✅ GET USER ID
+
     const events = await Event.find({
       department: req.params.dept
     });
+
+    // ✅ FETCH REGISTRATIONS
+    let registeredEventIds = [];
+    if (userId) {
+      const registrations = await Registration.find({ userId });
+      registeredEventIds = registrations.map(r =>
+        r.eventId.toString()
+      );
+    }
 
     const now = new Date();
 
@@ -88,7 +109,8 @@ exports.getEventsByDept = async (req, res) => {
 
       const eventObj = {
         ...e._doc,
-        status: isExpired ? "expired" : "active"
+        status: isExpired ? "expired" : "active",
+        isRegistered: registeredEventIds.includes(e._id.toString()) // ✅ ADD HERE
       };
 
       if (isExpired) expired.push(eventObj);
@@ -105,7 +127,6 @@ exports.getEventsByDept = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 
 // ✅ UPDATE EVENT

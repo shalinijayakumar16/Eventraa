@@ -414,6 +414,7 @@ function StudentDashboard() {
       let url = "http://localhost:5000/api/events?";
       if (department) url += `department=${department}&`;
       if (type) url += `type=${type}`;
+      if (userId) url += `userId=${userId}`;
       const res  = await fetch(url);
       const data = await res.json();
 
@@ -446,28 +447,50 @@ function StudentDashboard() {
   };
 
   const handleSubmitForm = async () => {
-    for (let field of selectedEvent.formFields || []) {
-      if (field.required && !formValues[field.label]) {
-        alert(`${field.label} is required`);
-        return;
-      }
+  for (let field of selectedEvent.formFields || []) {
+    if (field.required && !formValues[field.label]) {
+      alert(`${field.label} is required`);
+      return;
     }
-    try {
-      await fetch("http://localhost:5000/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          eventId: selectedEvent._id,
-          answers: Object.entries(formValues).map(([q, a]) => ({ question: q, answer: a })),
-        }),
-      });
-      alert("Registered successfully 🎉");
-      setShowForm(false); setSelectedEvent(null); setFormValues({});
-      fetchMyEvents();
-    } catch (err) { console.log(err); }
-  };
+  }
 
+  try {
+    await fetch("http://localhost:5000/api/registrations/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId,
+        eventId: selectedEvent._id,
+        answers: Object.entries(formValues).map(([q, a]) => ({
+          question: q,
+          answer: a
+        })),
+      }),
+    });
+
+
+console.log("REGISTER RESPONSE:");
+
+    alert("Registered successfully 🎉");
+
+    // ✅ STEP 2 FIX — instant UI update
+    setMyEvents(prev => [
+      ...prev,
+      { eventId: selectedEvent._id }
+    ]);
+
+    // close modal
+    setShowForm(false);
+    setSelectedEvent(null);
+    setFormValues({});
+
+    // sync with backend
+    fetchMyEvents();
+
+  } catch (err) {
+    console.log(err);
+  }
+};
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
@@ -687,7 +710,9 @@ function StudentDashboard() {
                 </div>
               ) : (
                 events.map((event, idx) => {
-                  const alreadyRegistered = myEvents.some((e) => e.eventId?._id === event._id);
+                  const alreadyRegistered = myEvents.some(
+  (e) => (e.eventId?._id || e.eventId) === event._id
+);
                   const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
                   const isPast = new Date(event.date) < new Date();
 
