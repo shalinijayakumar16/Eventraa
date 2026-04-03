@@ -696,7 +696,7 @@ function DeptDashboard() {
     setRegsEventTitle(eventTitle || "Event");
     setShowRegs(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/event-registrations/${eventId}`);
+      const res = await fetch(`http://localhost:5000/api/registrations/event-registrations/${eventId}`)
       const data = await res.json();
       setRegistrations(data);
     } catch (err) {
@@ -732,8 +732,8 @@ function DeptDashboard() {
           "Register No": r.registerNo || "",
           "Department": r.department || "",
           "Year": r.year || "",
-          "Submitted At": r.submittedAt
-            ? new Date(r.submittedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+          "Submitted At":r.createdAt
+            ? new Date(r.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
             : "",
         };
         allQuestions.forEach(q => {
@@ -923,7 +923,7 @@ function DeptDashboard() {
               { label: "Past Events",  val: pastEvents.length,                          filter: "past",     icon: "clock",    color: "#EC4899" },
             ].map((s, i) => (
               <div
-                key={i}
+                key={i._id}
                 className={`stat-pill${eventFilter === s.filter ? " active" : ""}`}
                 onClick={() => setEventFilter(s.filter)}
                 style={{ flex: 1, minWidth: 160, animationDelay: `${i * 0.07}s` }}
@@ -1357,7 +1357,7 @@ function DeptDashboard() {
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {registrations.map((r, i) => (
-                      <div key={i} className="reg-card">
+                      <div key={r._id} className="reg-card">
 
                         {/* Card header: number + date */}
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>

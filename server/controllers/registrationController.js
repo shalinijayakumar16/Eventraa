@@ -47,7 +47,7 @@ exports.getEventRegistrations = async (req, res) => {
 
     const data = await Registration.find({
       eventId: new mongoose.Types.ObjectId(eventId)
-    }).select("name department year registerNo");
+    }).select("name department year registerNo answers createdAt");
 
     res.json(data);
   } catch (err) {
