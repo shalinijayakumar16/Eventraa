@@ -6,6 +6,7 @@ const cron = require("node-cron");
 const Event = require("./models/Event");
 const registrationRoutes = require("./routes/registrationRoutes");
 
+
 dotenv.config();
 
 // Connect to MongoDB
@@ -23,7 +24,7 @@ app.use("/uploads", express.static("uploads"));
 // Routes
 app.use("/api/events", require("./routes/eventRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
-app.use("/api", registrationRoutes);
+app.use("/api/registrations", registrationRoutes);
 
 // 🔥 CRON JOB — mark expired events
 // TEST MODE (runs every 1 minute)

@@ -431,7 +431,7 @@ function StudentDashboard() {
 
   const fetchMyEvents = async () => {
     try {
-      const res  = await fetch(`http://localhost:5000/api/my-events/${userId}`);
+      const res  = await fetch(`http://localhost:5000/api/registrations/my-events/${userId}`);
       const data = await res.json();
       setMyEvents(Array.isArray(data) ? data : []);
     } catch (err) { console.log(err); setMyEvents([]); }
