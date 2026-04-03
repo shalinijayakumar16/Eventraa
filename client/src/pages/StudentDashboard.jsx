@@ -279,6 +279,21 @@ const STYLES = `
   .modal-box::-webkit-scrollbar { width: 3px; }
   .modal-box::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4); border-radius: 999px; }
 
+  /* ── Details modal — wider to fit poster nicely ── */
+  .modal-box-details {
+    background: #0D1130;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 92vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.12);
+  }
+  .modal-box-details::-webkit-scrollbar { width: 3px; }
+  .modal-box-details::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4); border-radius: 999px; }
+
   /* ── Profile dropdown ── */
   .profile-dropdown {
     position: absolute;
@@ -329,6 +344,17 @@ const STYLES = `
     grid-column: 1 / -1;
   }
 
+  /* ── Details meta row ── */
+  .detail-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
   @media (max-width: 768px) {
     .events-grid { grid-template-columns: 1fr !important; }
     .stats-row { flex-wrap: wrap !important; }
@@ -342,26 +368,28 @@ const STYLES = `
   }
 `;
 
-/* ─── Icons (same set as landing) ─────────────────────────────────────────── */
+/* ─── Icons ─────────────────────────────────────────────────────────────── */
 const Icon = ({ name, size = 18, color = "currentColor" }) => {
   const icons = {
-    calendar: (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>),
-    users:    (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>),
-    map:      (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21,10c0,7-9,13-9,13S3,17,3,10a9,9,0,0,1,18,0z"/><circle cx="12" cy="10" r="3"/></svg>),
-    clock:    (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>),
-    user:     (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>),
-    logout:   (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>),
-    check:    (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20,6 9,17 4,12"/></svg>),
-    x:        (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
-    filter:   (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/></svg>),
-    zap:      (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>),
+    calendar:   (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>),
+    users:      (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>),
+    map:        (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21,10c0,7-9,13-9,13S3,17,3,10a9,9,0,0,1,18,0z"/><circle cx="12" cy="10" r="3"/></svg>),
+    clock:      (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>),
+    user:       (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>),
+    logout:     (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>),
+    check:      (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20,6 9,17 4,12"/></svg>),
+    x:          (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>),
+    filter:     (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/></svg>),
+    zap:        (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>),
     arrowRight: (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>),
-    list:     (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>),
+    list:       (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>),
+    info:       (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>),
+    tag:        (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>),
   };
   return icons[name] || null;
 };
 
-/* ─── Blob Background (exact same as landing) ─────────────────────────────── */
+/* ─── Blob Background ──────────────────────────────────────────────────────── */
 const BlobBg = () => (
   <div style={{ position: "fixed", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
     <div className="animate-blob" style={{
@@ -392,6 +420,158 @@ const TYPE_STYLE = {
   default:  { bg: "rgba(110,231,183,0.15)", border: "rgba(110,231,183,0.3)", color: "#6EE7B7" },
 };
 
+/* ─── View Details Modal ────────────────────────────────────────────────────
+   Separate component to keep the main component clean.
+   Props:
+     event          — the full event object
+     alreadyJoined  — boolean, controls button state
+     onClose        — close handler
+     onRegister     — opens the registration form modal
+─────────────────────────────────────────────────────────────────────────── */
+function EventDetailsModal({ event, alreadyJoined, onClose, onRegister }) {
+  const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
+  const isPast    = new Date(event.date) < new Date();
+
+  const metaRows = [
+    { icon: "filter",   color: "#6366F1", label: "Department", value: event.department },
+    { icon: "calendar", color: "#8B5CF6", label: "Event Date",  value: new Date(event.date).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) },
+    event.applyBy && { icon: "clock", color: "#F59E0B", label: "Apply By", value: new Date(event.applyBy).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) },
+    event.venue && { icon: "map",  color: "#EC4899", label: "Venue",    value: event.venue },
+    event.type  && { icon: "tag",  color: typeStyle.color, label: "Type", value: event.type },
+  ].filter(Boolean);
+
+  return (
+    <div
+      className="modal-overlay"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="modal-box-details">
+
+        {/* ── Poster / Hero ── */}
+        {event.poster ? (
+          <div style={{ position: "relative", height: 220, overflow: "hidden", borderRadius: "24px 24px 0 0" }}>
+            <img
+              src={`http://localhost:5000/${event.poster}`}
+              alt="poster"
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
+            {/* gradient fade-to-modal-bg */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #0D1130 0%, rgba(13,17,48,0.3) 60%, transparent 100%)" }} />
+
+            {/* Past badge on poster */}
+            {isPast && (
+              <div style={{ position: "absolute", top: 14, left: 14, padding: "4px 12px", borderRadius: 999, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)", fontSize: 11, color: "#94A3B8", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(255,255,255,0.1)" }}>
+                Past Event
+              </div>
+            )}
+
+            {/* Close button on poster */}
+            <button
+              onClick={onClose}
+              style={{ position: "absolute", top: 14, right: 14, width: 34, height: 34, borderRadius: 9, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(0,0,0,0.7)"}
+              onMouseLeave={e => e.currentTarget.style.background = "rgba(0,0,0,0.45)"}
+            >
+              <Icon name="x" size={16} color="#E2E8F0" />
+            </button>
+          </div>
+        ) : (
+          /* Placeholder hero when no poster */
+          <div style={{ position: "relative", height: 140, background: "linear-gradient(135deg, rgba(99,102,241,0.18), rgba(236,72,153,0.10))", borderRadius: "24px 24px 0 0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon name="calendar" size={40} color="rgba(99,102,241,0.35)" />
+            {isPast && (
+              <div style={{ position: "absolute", top: 14, left: 14, padding: "4px 12px", borderRadius: 999, background: "rgba(0,0,0,0.3)", fontSize: 11, color: "#64748B", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(255,255,255,0.07)" }}>
+                Past Event
+              </div>
+            )}
+            <button
+              onClick={onClose}
+              style={{ position: "absolute", top: 14, right: 14, width: 34, height: 34, borderRadius: 9, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
+              onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+            >
+              <Icon name="x" size={16} color="#94A3B8" />
+            </button>
+          </div>
+        )}
+
+        {/* ── Body ── */}
+        <div style={{ padding: "22px 28px 28px" }}>
+
+          {/* Title row */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 22, color: "#E2E8F0", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+              {event.title}
+            </h2>
+            <span
+              className="badge-pill"
+              style={{ background: typeStyle.bg, border: `1px solid ${typeStyle.border}`, color: typeStyle.color, marginTop: 3 }}
+            >
+              {event.type}
+            </span>
+          </div>
+
+          {/* Description */}
+          {event.description ? (
+            <p style={{ fontSize: 14, color: "#94A3B8", lineHeight: 1.7, marginBottom: 20, fontFamily: "'DM Sans', sans-serif" }}>
+              {event.description}
+            </p>
+          ) : (
+            <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, marginBottom: 20, fontStyle: "italic" }}>
+              No description provided.
+            </p>
+          )}
+
+          {/* Divider */}
+          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 16 }} />
+
+          {/* Meta info grid */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+            {metaRows.map((row, i) => (
+              <div key={i} className="detail-meta-row">
+                <div style={{ width: 30, height: 30, borderRadius: 8, background: `${row.color}18`, border: `1px solid ${row.color}30`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon name={row.icon} size={14} color={row.color} />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  <span style={{ fontSize: 10, color: "#475569", fontFamily: "'Outfit', sans-serif", fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase" }}>
+                    {row.label}
+                  </span>
+                  <span style={{ fontSize: 13, color: "#CBD5E1", fontFamily: "'DM Sans', sans-serif" }}>
+                    {row.value}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Action buttons ── */}
+          <div style={{ display: "flex", gap: 10 }}>
+            <button className="btn-ghost" onClick={onClose} style={{ padding: "11px 20px" }}>
+              Close
+            </button>
+
+            <button
+              className="btn-primary-glow"
+              style={{ flex: 1, justifyContent: "center", padding: "11px", animation: alreadyJoined ? "none" : "glowPulse 3s ease infinite" }}
+              disabled={alreadyJoined || isPast}
+              onClick={() => { onClose(); onRegister(); }}
+            >
+              {alreadyJoined ? (
+                <><Icon name="check" size={14} color="#4ade80" /> Registered</>
+              ) : isPast ? (
+                <>Event Ended</>
+              ) : (
+                <>Register Now <Icon name="arrowRight" size={14} color="white" /></>
+              )}
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main Component ─────────────────────────────────────────────────────── */
 function StudentDashboard() {
   const [events, setEvents]               = useState([]);
@@ -400,8 +580,12 @@ function StudentDashboard() {
   const [myEvents, setMyEvents]           = useState([]);
   const [user, setUser]                   = useState(null);
   const [showProfile, setShowProfile]     = useState(false);
-  const [showForm, setShowForm]           = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+
+  // ── Two separate modal states ──────────────────────────────────────────────
+  // detailsEvent  → "View Details" popup
+  // selectedEvent → "Register" form popup  (renamed from selectedEvent to avoid clash)
+  const [detailsEvent, setDetailsEvent]   = useState(null);   // NEW
+  const [selectedEvent, setSelectedEvent] = useState(null);   // registration form
   const [formValues, setFormValues]       = useState({});
 
   const userId = localStorage.getItem("userId");
@@ -413,19 +597,14 @@ function StudentDashboard() {
     try {
       let url = "http://localhost:5000/api/events?";
       if (department) url += `department=${department}&`;
-      if (type) url += `type=${type}`;
-      if (userId) url += `userId=${userId}`;
+      if (type)       url += `type=${type}`;
+      if (userId)     url += `userId=${userId}`;
       const res  = await fetch(url);
       const data = await res.json();
-
-      // ── FIXED: backend now returns { active, expired } not { upcoming, past }
       if (Array.isArray(data)) {
         setEvents(data);
       } else {
-        setEvents([
-          ...(data.active  || []),
-          ...(data.expired || []),
-        ]);
+        setEvents([...(data.active || []), ...(data.expired || [])]);
       }
     } catch (err) { console.log(err); setEvents([]); }
   };
@@ -447,60 +626,39 @@ function StudentDashboard() {
   };
 
   const handleSubmitForm = async () => {
-  for (let field of selectedEvent.formFields || []) {
-    if (field.required && !formValues[field.label]) {
-      alert(`${field.label} is required`);
-      return;
+    for (let field of selectedEvent.formFields || []) {
+      if (field.required && !formValues[field.label]) {
+        alert(`${field.label} is required`);
+        return;
+      }
     }
-  }
+    try {
+      await fetch("http://localhost:5000/api/registrations/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          eventId: selectedEvent._id,
+          answers: Object.entries(formValues).map(([q, a]) => ({ question: q, answer: a })),
+        }),
+      });
+      alert("Registered successfully 🎉");
+      setMyEvents(prev => [...prev, { eventId: selectedEvent._id }]);
+      setSelectedEvent(null);
+      setFormValues({});
+      fetchMyEvents();
+    } catch (err) { console.log(err); }
+  };
 
-  try {
-    await fetch("http://localhost:5000/api/registrations/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId,
-        eventId: selectedEvent._id,
-        answers: Object.entries(formValues).map(([q, a]) => ({
-          question: q,
-          answer: a
-        })),
-      }),
-    });
-
-
-console.log("REGISTER RESPONSE:");
-
-    alert("Registered successfully 🎉");
-
-    // ✅ STEP 2 FIX — instant UI update
-    setMyEvents(prev => [
-      ...prev,
-      { eventId: selectedEvent._id }
-    ]);
-
-    // close modal
-    setShowForm(false);
-    setSelectedEvent(null);
-    setFormValues({});
-
-    // sync with backend
-    fetchMyEvents();
-
-  } catch (err) {
-    console.log(err);
-  }
-};
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
     window.location.href = "/";
   };
 
-  // ── FIXED: derive counts from the single source of truth ─────────────────
-  const totalEvents      = events.length;
-  const registeredCount  = myEvents.length;
-  const departmentCount  = [...new Set(events.map(e => e.department))].filter(Boolean).length;
+  const totalEvents     = events.length;
+  const registeredCount = myEvents.length;
+  const departmentCount = [...new Set(events.map(e => e.department))].filter(Boolean).length;
 
   return (
     <>
@@ -508,7 +666,7 @@ console.log("REGISTER RESPONSE:");
       <div style={{ background: "#07091A", minHeight: "100vh", color: "#E2E8F0", position: "relative" }}>
         <BlobBg />
 
-        {/* ── Topbar (same glass style as landing navbar) ── */}
+        {/* ── Topbar ── */}
         <header className="topbar" style={{
           position: "sticky", top: 0, zIndex: 100,
           background: "rgba(7,9,26,0.85)", backdropFilter: "blur(24px)",
@@ -516,7 +674,6 @@ console.log("REGISTER RESPONSE:");
           padding: "0 32px", height: 68,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          {/* Logo — identical to landing */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{
               width: 34, height: 34, borderRadius: 10,
@@ -533,13 +690,11 @@ console.log("REGISTER RESPONSE:");
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* User dept pill */}
             {user && (
               <div style={{ padding: "6px 14px", borderRadius: 999, background: "rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.28)", fontSize: 13, color: "#A5B4FC", fontFamily: "'Outfit', sans-serif", fontWeight: 600 }}>
                 {user.department}
               </div>
             )}
-            {/* Profile avatar */}
             <button
               onClick={() => setShowProfile(p => !p)}
               style={{
@@ -555,7 +710,6 @@ console.log("REGISTER RESPONSE:");
             >
               <Icon name="user" size={17} color="white" />
             </button>
-            {/* Logout */}
             <button className="btn-logout" onClick={handleLogout}>
               <Icon name="logout" size={15} color="#FCA5A5" />
               <span>Logout</span>
@@ -566,19 +720,9 @@ console.log("REGISTER RESPONSE:");
         {/* ── Profile Dropdown ── */}
         {showProfile && user && (
           <div className="profile-dropdown">
-            {/* Header gradient strip */}
-            <div style={{
-              padding: "20px 20px 16px",
-              borderBottom: "1px solid rgba(255,255,255,0.07)",
-              background: "linear-gradient(135deg, rgba(99,102,241,0.12), rgba(236,72,153,0.06))",
-            }}>
+            <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)", background: "linear-gradient(135deg, rgba(99,102,241,0.12), rgba(236,72,153,0.06))" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: "50%",
-                  background: "linear-gradient(135deg, #6366F1, #EC4899)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 18, flexShrink: 0,
-                }}>
+                <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg, #6366F1, #EC4899)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Icon name="user" size={20} color="white" />
                 </div>
                 <div>
@@ -587,7 +731,6 @@ console.log("REGISTER RESPONSE:");
                 </div>
               </div>
             </div>
-            {/* Info rows */}
             <div style={{ padding: "12px 20px 16px" }}>
               {[["Register No", user.registerNo], ["Email", user.email]].map(([k, v]) => (
                 <div key={k} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
@@ -615,7 +758,6 @@ console.log("REGISTER RESPONSE:");
             <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#475569", marginBottom: 10, paddingLeft: 4 }}>
               My Registrations
             </div>
-
             {myEvents.length === 0 ? (
               <div style={{ padding: "20px 12px", color: "#475569", fontSize: 13, fontStyle: "italic", textAlign: "center" }}>
                 <div style={{ fontSize: 28, marginBottom: 8 }}>📭</div>
@@ -631,12 +773,9 @@ console.log("REGISTER RESPONSE:");
                 </div>
               ))
             )}
-
-            {/* Stats at bottom of sidebar */}
             {myEvents.length > 0 && (
               <div style={{ marginTop: "auto", paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                 <div style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.18)", textAlign: "center" }}>
-                  {/* ── FIXED: uses registeredCount ── */}
                   <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 24, color: "#A5B4FC" }}>{registeredCount}</div>
                   <div style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>events joined</div>
                 </div>
@@ -647,7 +786,6 @@ console.log("REGISTER RESPONSE:");
           {/* ── Main Content ── */}
           <main className="main-content" style={{ flex: 1, padding: "40px 36px 60px", maxWidth: "calc(100vw - 260px)" }}>
 
-            {/* Page title */}
             <div className="animate-fadeUp" style={{ marginBottom: 32 }}>
               <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 3vw, 2.4rem)", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 6 }}>
                 <span className="gradient-text">Discover</span>{" "}
@@ -658,7 +796,7 @@ console.log("REGISTER RESPONSE:");
               </p>
             </div>
 
-            {/* ── Stats row — FIXED: uses derived counts ── */}
+            {/* Stats row */}
             <div className="stats-row animate-fadeUp" style={{ display: "flex", gap: 12, marginBottom: 28, animationDelay: "0.1s" }}>
               {[
                 { label: "Total Events", val: totalEvents,     icon: "calendar", color: "#6366F1" },
@@ -692,13 +830,12 @@ console.log("REGISTER RESPONSE:");
                 <option value="Workshop">Workshop</option>
                 <option value="Seminar">Seminar</option>
               </select>
-              {/* ── FIXED: uses totalEvents ── */}
               <div style={{ marginLeft: "auto", fontSize: 13, color: "#475569", fontFamily: "'DM Sans', sans-serif" }}>
                 {totalEvents} event{totalEvents !== 1 ? "s" : ""} found
               </div>
             </div>
 
-            {/* Events Grid */}
+            {/* ── Events Grid ── */}
             <div className="events-grid animate-fadeUp" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, animationDelay: "0.2s" }}>
               {events.length === 0 ? (
                 <div className="empty-state">
@@ -711,10 +848,10 @@ console.log("REGISTER RESPONSE:");
               ) : (
                 events.map((event, idx) => {
                   const alreadyRegistered = myEvents.some(
-  (e) => (e.eventId?._id || e.eventId) === event._id
-);
+                    (e) => (e.eventId?._id || e.eventId) === event._id
+                  );
                   const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
-                  const isPast = new Date(event.date) < new Date();
+                  const isPast    = new Date(event.date) < new Date();
 
                   return (
                     <div key={event._id} className="event-card" style={{ animationDelay: `${idx * 0.05}s` }}>
@@ -766,18 +903,30 @@ console.log("REGISTER RESPONSE:");
                           )}
                         </div>
 
-                        {/* Register button */}
-                        <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                        {/* ── TWO buttons: View Details + Register ── */}
+                        <div style={{ marginTop: "auto", paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 8 }}>
+
+                          {/* View Details — always visible */}
+                          <button
+                            className="btn-ghost"
+                            style={{ flex: 1, justifyContent: "center", fontSize: 12, padding: "9px 10px" }}
+                            onClick={() => setDetailsEvent(event)}
+                          >
+                            <Icon name="info" size={13} color="#94A3B8" />
+                            Details
+                          </button>
+
+                          {/* Register — full width when no details btn, otherwise shared */}
                           <button
                             className="btn-primary-glow"
-                            style={{ width: "100%", justifyContent: "center", fontSize: 13, padding: "10px" }}
+                            style={{ flex: 1, justifyContent: "center", fontSize: 12, padding: "9px 10px" }}
                             disabled={alreadyRegistered}
-                            onClick={() => { setSelectedEvent(event); setFormValues({}); setShowForm(true); }}
+                            onClick={() => { setSelectedEvent(event); setFormValues({}); }}
                           >
                             {alreadyRegistered ? (
-                              <><Icon name="check" size={14} color="#4ade80" /> Registered</>
+                              <><Icon name="check" size={13} color="#4ade80" /> Registered</>
                             ) : (
-                              <>Register Now <Icon name="arrowRight" size={14} color="white" /></>
+                              <>Register <Icon name="arrowRight" size={13} color="white" /></>
                             )}
                           </button>
                         </div>
@@ -790,9 +939,34 @@ console.log("REGISTER RESPONSE:");
           </main>
         </div>
 
-        {/* ── Registration Modal ── */}
-        {showForm && selectedEvent && (
-          <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowForm(false); }}>
+        {/* ══════════════════════════════════════════════════════════════════
+            VIEW DETAILS MODAL
+            Opens when user clicks "Details" on any card.
+            Separate from the registration form modal below.
+        ══════════════════════════════════════════════════════════════════ */}
+        {detailsEvent && (
+          <EventDetailsModal
+            event={detailsEvent}
+            alreadyJoined={myEvents.some(
+              (e) => (e.eventId?._id || e.eventId) === detailsEvent._id
+            )}
+            onClose={() => setDetailsEvent(null)}
+            onRegister={() => {
+              // When "Register Now" is clicked inside the details modal,
+              // open the registration form for the same event.
+              setSelectedEvent(detailsEvent);
+              setFormValues({});
+              setDetailsEvent(null);
+            }}
+          />
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════
+            REGISTRATION FORM MODAL
+            Unchanged from original — only opens for the form fields.
+        ══════════════════════════════════════════════════════════════════ */}
+        {selectedEvent && (
+          <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSelectedEvent(null); }}>
             <div className="modal-box">
               {/* Header */}
               <div style={{ padding: "24px 28px 20px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
@@ -805,7 +979,7 @@ console.log("REGISTER RESPONSE:");
                   </h2>
                 </div>
                 <button
-                  onClick={() => setShowForm(false)}
+                  onClick={() => setSelectedEvent(null)}
                   style={{ width: 34, height: 34, borderRadius: 9, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
                   onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
@@ -841,7 +1015,7 @@ console.log("REGISTER RESPONSE:");
 
               {/* Actions */}
               <div style={{ padding: "0 28px 24px", display: "flex", gap: 10 }}>
-                <button className="btn-ghost" onClick={() => setShowForm(false)} style={{ padding: "11px 20px" }}>Cancel</button>
+                <button className="btn-ghost" onClick={() => setSelectedEvent(null)} style={{ padding: "11px 20px" }}>Cancel</button>
                 <button className="btn-primary-glow" onClick={handleSubmitForm} style={{ flex: 1, justifyContent: "center", padding: "11px", animation: "glowPulse 3s ease infinite" }}>
                   <Icon name="check" size={15} color="white" />
                   Confirm Registration
@@ -850,6 +1024,7 @@ console.log("REGISTER RESPONSE:");
             </div>
           </div>
         )}
+
       </div>
     </>
   );
