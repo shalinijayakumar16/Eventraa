@@ -5,33 +5,42 @@ const eventSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+
   description: {
     type: String
   },
+
   date: {
     type: Date,
     required: true
   },
+
   applyBy: {
-  type: Date,
-  required: true
-},
+    type: Date,
+    required: true
+  },
+
   venue: {
     type: String
   },
+
   department: {
     type: String
   },
+
   type: {
     type: String   // Technical, Workshop, Non-Technical
   },
+
   departmentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Department"
   },
+
   maxParticipants: {
     type: Number
   },
+
   poster: {
     type: String
   },
@@ -40,7 +49,7 @@ const eventSchema = new mongoose.Schema({
     type: String
   },
 
-  // 🔥 NEW FEATURE (IMPORTANT)
+  // 🔥 Custom Form Fields
   formFields: [
     {
       label: {
@@ -59,7 +68,26 @@ const eventSchema = new mongoose.Schema({
   status: {
     type: String,
     default: "active"
-  }
+  },
+
+  // ✅ NEW: Attendance Tracking
+  attendance: [
+    {
+      studentId: {
+        type: String
+      },
+      name: {
+        type: String
+      },
+      registerNo: {
+        type: String
+      },
+      attended: {
+        type: Boolean,
+        default: false
+      }
+    }
+  ]
 
 }, { timestamps: true });
 

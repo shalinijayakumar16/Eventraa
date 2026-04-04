@@ -1,7 +1,7 @@
 const Event = require("../models/Event");
 const Registration = require("../models/Registration");
 
-// ✅ CREATE EVENT (with poster + formFields + applyBy)
+// ✅ CREATE EVENT
 exports.createEvent = async (req, res) => {
   try {
     let formFields = [];
@@ -28,9 +28,7 @@ exports.createEvent = async (req, res) => {
   }
 };
 
-
-
-// ✅ GET ALL EVENTS (ACTIVE + EXPIRED based on applyBy)
+// ✅ GET ALL EVENTS
 exports.getAllEvents = async (req, res) => {
   try {
     const { department, type, userId } = req.query;
@@ -41,7 +39,6 @@ exports.getAllEvents = async (req, res) => {
 
     const events = await Event.find(filter);
 
-    // 🔥 NEW: get user registrations
     let registeredEventIds = [];
 
     if (userId) {
@@ -62,7 +59,7 @@ exports.getAllEvents = async (req, res) => {
       const eventObj = {
         ...e._doc,
         status: isExpired ? "expired" : "active",
-        isRegistered: registeredEventIds.includes(e._id.toString()) // ✅ FIX
+        isRegistered: registeredEventIds.includes(e._id.toString())
       };
 
       if (isExpired) expired.push(eventObj);
@@ -80,17 +77,15 @@ exports.getAllEvents = async (req, res) => {
   }
 };
 
-
-// ✅ GET EVENTS BY DEPARTMENT (ACTIVE + EXPIRED)
+// ✅ GET EVENTS BY DEPARTMENT
 exports.getEventsByDept = async (req, res) => {
   try {
-    const { userId } = req.query; // ✅ GET USER ID
+    const { userId } = req.query;
 
     const events = await Event.find({
       department: req.params.dept
     });
 
-    // ✅ FETCH REGISTRATIONS
     let registeredEventIds = [];
     if (userId) {
       const registrations = await Registration.find({ userId });
@@ -110,7 +105,7 @@ exports.getEventsByDept = async (req, res) => {
       const eventObj = {
         ...e._doc,
         status: isExpired ? "expired" : "active",
-        isRegistered: registeredEventIds.includes(e._id.toString()) // ✅ ADD HERE
+        isRegistered: registeredEventIds.includes(e._id.toString())
       };
 
       if (isExpired) expired.push(eventObj);
@@ -128,13 +123,55 @@ exports.getEventsByDept = async (req, res) => {
   }
 };
 
+// ✅ GET ATTENDANCE (SAFE)
+exports.getAttendance = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.json(event.attendance || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ✅ UPDATE ATTENDANCE (SAFE)
+exports.updateAttendance = async (req, res) => {
+  try {
+    const { studentId, attended } = req.body;
+
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const student = event.attendance.find(
+      s => s.studentId === studentId
+    );
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found in attendance" });
+    }
+
+    student.attended = attended;
+
+    await event.save();
+
+    res.json(event.attendance);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
 // ✅ UPDATE EVENT
 exports.updateEvent = async (req, res) => {
   try {
     let updateData = { ...req.body };
 
-    // Handle formFields parsing
     if (req.body.formFields) {
       try {
         updateData.formFields = JSON.parse(req.body.formFields);
@@ -143,7 +180,6 @@ exports.updateEvent = async (req, res) => {
       }
     }
 
-    // Handle poster update
     if (req.file) {
       updateData.poster = req.file.path.replace(/\\/g, "/");
     }
@@ -160,8 +196,6 @@ exports.updateEvent = async (req, res) => {
   }
 };
 
-
-
 // ✅ DELETE EVENT
 exports.deleteEvent = async (req, res) => {
   try {
@@ -171,3 +205,4 @@ exports.deleteEvent = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
