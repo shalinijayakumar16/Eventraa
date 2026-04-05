@@ -65,7 +65,7 @@ function StudentDashboard() {
 
   const fetchUser = async () => {
     try {
-      const res  = await fetch(`http://localhost:5000/api/user/${userId}`);
+      const res  = await fetch(`/api/users/user/${userId}`);
       const data = await res.json();
       setUser(data);
     } catch (err) { console.log(err); }

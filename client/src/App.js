@@ -7,6 +7,7 @@ import Signup from "./pages/Register";
 import DeptLogin from "./pages/DeptLogin";
 import DeptDashboard from "./pages/DeptDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
+import Profile from "./pages/Profile";
 
 
 
@@ -21,6 +22,7 @@ function App() {
         <Route path="/dept-dashboard" element={<DeptDashboard />} />
 
         <Route path="/student" element={<StudentDashboard />} />
+        <Route path="/profile" element={<Profile />} />
         
 
       </Routes>

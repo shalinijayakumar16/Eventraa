@@ -1,6 +1,9 @@
 import Icon from "./icon";
+import { useNavigate } from "react-router-dom";
 
 function ProfileDropdown({ user }) {
+  const navigate = useNavigate();
+
   if (!user) return null;
 
   return (
@@ -22,12 +25,32 @@ function ProfileDropdown({ user }) {
       </div>
 
       <div style={{ padding: "12px 20px 16px" }}>
-        {[["Register No", user.registerNo], ["Email", user.email]].map(([k, v]) => (
+        {[['Register No', user.registerNo], ['Email', user.email]].map(([k, v]) => (
           <div key={k} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
             <span style={{ fontSize: 12, color: "#64748B", fontFamily: "'Outfit', sans-serif", fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}>{k}</span>
             <span style={{ fontSize: 13, color: "#CBD5E1" }}>{v}</span>
           </div>
         ))}
+
+        <button
+          type="button"
+          onClick={() => navigate("/profile")}
+          style={{
+            width: "100%",
+            marginTop: 14,
+            padding: "10px 14px",
+            borderRadius: 12,
+            border: "1px solid rgba(99,102,241,0.22)",
+            background: "linear-gradient(135deg, rgba(99,102,241,0.16), rgba(236,72,153,0.1))",
+            color: "#E2E8F0",
+            fontFamily: "'Outfit', sans-serif",
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          View full profile
+        </button>
       </div>
     </div>
   );
