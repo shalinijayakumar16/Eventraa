@@ -15,6 +15,7 @@ export const TABS = [
   { id: "registered", label: "Registered",  icon: "check"    },
   { id: "upcoming",   label: "Upcoming",    icon: "trending" },
   { id: "completed",  label: "Completed",   icon: "star"     },
+  { id: "wishlist",   label: "Wishlist",    icon: "tag"      },
 ];
 
 export const ALL_DEPARTMENTS = ["CSE", "ECE", "EEE", "IT", "MECH", "CIVIL", "CHEM", "BIO", "MBA", "MCA"];

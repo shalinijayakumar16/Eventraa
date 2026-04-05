@@ -1,7 +1,7 @@
 import Icon from "./icon";
 import EventCard from "./EventCard";
 
-function EventsGrid({ events, registeredIds, activeTab, onDetails, onRegister }) {
+function EventsGrid({ events, registeredIds, activeTab, onDetails, onRegister, wishlistIds, wishlistLoadingMap, onToggleWishlist }) {
   if (events.length === 0) {
     return (
       <div className="events-grid animate-fadeUp" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, animationDelay: "0.2s" }}>
@@ -32,6 +32,9 @@ function EventsGrid({ events, registeredIds, activeTab, onDetails, onRegister })
           alreadyRegistered={registeredIds.has(event._id)}
           onDetails={onDetails}
           onRegister={onRegister}
+          isSaved={wishlistIds.includes(event._id)}
+          wishlistLoading={Boolean(wishlistLoadingMap[event._id])}
+          onToggleWishlist={onToggleWishlist}
           style={{ animationDelay: `${idx * 0.04}s` }}
         />
       ))}

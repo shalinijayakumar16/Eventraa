@@ -2,7 +2,15 @@ import Icon from "./icon";
 import CountdownChip from "./CountdownChip";
 import { TYPE_STYLE } from "../constants/config";
 
-function EventCard({ event, alreadyRegistered, onDetails, onRegister }) {
+function EventCard({
+  event,
+  alreadyRegistered,
+  onDetails,
+  onRegister,
+  isSaved,
+  wishlistLoading,
+  onToggleWishlist,
+}) {
   const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
   const isPast    = new Date(event.date) < new Date();
 
@@ -47,9 +55,33 @@ function EventCard({ event, alreadyRegistered, onDetails, onRegister }) {
           <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 15, color: "#E2E8F0", letterSpacing: "-0.01em", lineHeight: 1.3 }}>
             {event.title}
           </h3>
-          <span className="badge-pill" style={{ background: typeStyle.bg, border: `1px solid ${typeStyle.border}`, color: typeStyle.color }}>
-            {event.type}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <span className="badge-pill" style={{ background: typeStyle.bg, border: `1px solid ${typeStyle.border}`, color: typeStyle.color }}>
+              {event.type}
+            </span>
+
+            {/* Toggle wishlist status for this event */}
+            <button
+              type="button"
+              onClick={() => onToggleWishlist(event._id)}
+              disabled={wishlistLoading}
+              title={isSaved ? "Remove from wishlist" : "Save to wishlist"}
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 8,
+                border: isSaved ? "1px solid rgba(245,158,11,0.5)" : "1px solid rgba(255,255,255,0.1)",
+                background: isSaved ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.04)",
+                cursor: wishlistLoading ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: wishlistLoading ? 0.7 : 1,
+              }}
+            >
+              <Icon name={isSaved ? "starFilled" : "star"} size={14} color={isSaved ? "#F59E0B" : "#94A3B8"} />
+            </button>
+          </div>
         </div>
 
         {/* Meta */}

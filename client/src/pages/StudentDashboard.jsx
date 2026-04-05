@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 // Styles & constants
 import { STYLES } from "../constants/styles";
@@ -12,14 +12,25 @@ import StatsRow          from "../components/StatsRow";
 import TabBar            from "../components/TabBar";
 import FiltersRow        from "../components/FiltersRow";
 import EventsGrid        from "../components/EventsGrid";
+import WishlistPage      from "../components/WishlistPage";
 import EventDetailsModal from "../components/EventDetailsModal";
 import RegistrationModal from "../components/RegistrationModal";
+import NotificationPanel from "../components/NotificationPanel";
 
 function StudentDashboard() {
   const [events, setEvents]           = useState([]);
   const [myEvents, setMyEvents]       = useState([]);
   const [user, setUser]               = useState(null);
   const [showProfile, setShowProfile] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  // Wishlist state
+  const [wishlistIds, setWishlistIds] = useState([]);
+  const [wishlistLoadingMap, setWishlistLoadingMap] = useState({});
+
+  // Notification state
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Modals
   const [detailsEvent, setDetailsEvent]   = useState(null);
@@ -34,9 +45,18 @@ function StudentDashboard() {
   const [dateFilter, setDateFilter] = useState("");
 
   const userId = localStorage.getItem("userId");
+  const wishlistStorageKey = `eventra_wishlist_${userId || "guest"}`;
 
   useEffect(() => { fetchEvents(); }, [department, type]);
-  useEffect(() => { fetchMyEvents(); fetchUser(); }, []);
+  useEffect(() => { fetchMyEvents(); fetchUser(); fetchWishlistIds(); fetchNotificationSummary(); }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      fetchNotificationSummary();
+    }, 30000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   /* ── API calls ─────────────────────────────────────────────────────────── */
   const fetchEvents = async () => {
@@ -71,6 +91,114 @@ function StudentDashboard() {
     } catch (err) { console.log(err); }
   };
 
+  const normalizeWishlistIds = useCallback((payload) => {
+    const list = Array.isArray(payload) ? payload : payload?.events || [];
+
+    return list
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item?.event?._id) return item.event._id;
+        if (item?.eventId?._id) return item.eventId._id;
+        return item?._id || item?.eventId || null;
+      })
+      .filter(Boolean);
+  }, []);
+
+  const fetchWishlistIds = useCallback(async () => {
+    try {
+      const response = await fetch("/api/wishlist", {
+        headers: userId ? { "x-user-id": userId } : {},
+      });
+
+      if (!response.ok) {
+        throw new Error("Wishlist API unavailable");
+      }
+
+      const payload = await response.json();
+      const ids = normalizeWishlistIds(payload);
+
+      setWishlistIds(ids);
+      localStorage.setItem(wishlistStorageKey, JSON.stringify(ids));
+    } catch (error) {
+      const fallback = JSON.parse(localStorage.getItem(wishlistStorageKey) || "[]");
+      setWishlistIds(Array.isArray(fallback) ? fallback : []);
+    }
+  }, [normalizeWishlistIds, userId, wishlistStorageKey]);
+
+  const fetchNotificationSummary = useCallback(async () => {
+    try {
+      const response = await fetch("/api/notifications", {
+        headers: userId ? { "x-user-id": userId } : {},
+      });
+
+      if (!response.ok) {
+        throw new Error("Notification API unavailable");
+      }
+
+      const payload = await response.json();
+      const list = Array.isArray(payload) ? payload : payload.notifications || [];
+
+      const normalized = list.map((item, index) => ({
+        _id: item._id || `summary-${index}`,
+        message: item.message || "Notification",
+        createdAt: item.createdAt || new Date().toISOString(),
+        read: Boolean(item.read),
+      }));
+
+      setNotifications(normalized);
+      setUnreadCount(normalized.filter((item) => !item.read).length);
+    } catch (error) {
+      // Keep existing state if API is unavailable
+    }
+  }, [userId]);
+
+  const handleToggleWishlist = useCallback(async (eventId) => {
+    if (!eventId) return;
+
+    // Toggle wishlist status for this event
+    const willSave = !wishlistIds.includes(eventId);
+
+    setWishlistLoadingMap((prev) => ({ ...prev, [eventId]: true }));
+    setWishlistIds((prev) => {
+      const updated = willSave ? [...prev, eventId] : prev.filter((id) => id !== eventId);
+      localStorage.setItem(wishlistStorageKey, JSON.stringify(updated));
+      return updated;
+    });
+
+    try {
+      const response = await fetch(`/api/wishlist/${eventId}`, {
+        method: willSave ? "POST" : "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(userId ? { "x-user-id": userId } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Wishlist API unavailable");
+      }
+    } catch (error) {
+      // LocalStorage fallback already applied
+    } finally {
+      setWishlistLoadingMap((prev) => {
+        const next = { ...prev };
+        delete next[eventId];
+        return next;
+      });
+    }
+  }, [userId, wishlistIds, wishlistStorageKey]);
+
+  const handleNotificationsUpdate = useCallback((list) => {
+    setNotifications(list);
+    setUnreadCount(list.filter((item) => !item.read).length);
+  }, []);
+
+  const handleToggleNotifications = useCallback(() => {
+    // Toggle notification panel visibility
+    setShowNotifications((previous) => !previous);
+    setShowProfile(false);
+  }, []);
+
   /* ── Registration submit ───────────────────────────────────────────────── */
   const handleSubmitForm = async () => {
     for (let field of selectedEvent.formFields || []) {
@@ -91,6 +219,20 @@ function StudentDashboard() {
       });
       alert("Registered successfully 🎉");
       setMyEvents(prev => [...prev, { eventId: selectedEvent._id }]);
+
+      // Add a local success notification for immediate UX feedback
+      setNotifications((prev) => {
+        const created = {
+          _id: `local-${Date.now()}`,
+          message: `You successfully registered for ${selectedEvent.title}`,
+          createdAt: new Date().toISOString(),
+          read: false,
+        };
+        const updated = [created, ...prev];
+        setUnreadCount(updated.filter((item) => !item.read).length);
+        return updated;
+      });
+
       setSelectedEvent(null);
       setFormValues({});
       fetchMyEvents();
@@ -107,7 +249,7 @@ function StudentDashboard() {
   /* ── Derived data ──────────────────────────────────────────────────────── */
   const now = new Date();
 
-  const registeredIds = new Set(myEvents.map(e => e.eventId?._id || e.eventId));
+  const registeredIds = useMemo(() => new Set(myEvents.map(e => e.eventId?._id || e.eventId)), [myEvents]);
 
   const filteredEvents = events.filter(event => {
     const eventDate = new Date(event.date);
@@ -141,6 +283,7 @@ function StudentDashboard() {
     registered: registeredIds.size,
     upcoming:   events.filter(e => new Date(e.date) >= now).length,
     completed:  events.filter(e => new Date(e.date) < now).length,
+    wishlist:   wishlistIds.length,
   };
 
   /* ── Handlers passed down ──────────────────────────────────────────────── */
@@ -166,8 +309,20 @@ function StudentDashboard() {
         <Topbar
           user={user}
           showProfile={showProfile}
-          onToggleProfile={() => setShowProfile(p => !p)}
+          unreadCount={unreadCount}
+          onToggleNotifications={handleToggleNotifications}
+          onToggleProfile={() => {
+            setShowNotifications(false);
+            setShowProfile(p => !p);
+          }}
           onLogout={handleLogout}
+        />
+
+        <NotificationPanel
+          open={showNotifications}
+          userId={userId}
+          onClose={() => setShowNotifications(false)}
+          onNotificationsUpdate={handleNotificationsUpdate}
         />
 
         {showProfile && (
@@ -177,7 +332,10 @@ function StudentDashboard() {
         {/* Page layout */}
         <div
           style={{ display: "flex", position: "relative", zIndex: 1 }}
-          onClick={() => showProfile && setShowProfile(false)}
+          onClick={() => {
+            if (showProfile) setShowProfile(false);
+            if (showNotifications) setShowNotifications(false);
+          }}
         >
           <Sidebar myEvents={myEvents} registeredCount={registeredCount} />
 
@@ -207,26 +365,45 @@ function StudentDashboard() {
               tabCounts={tabCounts}
             />
 
-            <FiltersRow
-              search={search}
-              department={department}
-              type={type}
-              dateFilter={dateFilter}
-              filteredCount={filteredEvents.length}
-              onSearchChange={setSearch}
-              onDepartmentChange={setDepartment}
-              onTypeChange={setType}
-              onDateChange={setDateFilter}
-              onClear={handleClearFilters}
-            />
+            {activeTab !== "wishlist" && (
+              <FiltersRow
+                search={search}
+                department={department}
+                type={type}
+                dateFilter={dateFilter}
+                filteredCount={filteredEvents.length}
+                onSearchChange={setSearch}
+                onDepartmentChange={setDepartment}
+                onTypeChange={setType}
+                onDateChange={setDateFilter}
+                onClear={handleClearFilters}
+              />
+            )}
 
-            <EventsGrid
-              events={filteredEvents}
-              registeredIds={registeredIds}
-              activeTab={activeTab}
-              onDetails={setDetailsEvent}
-              onRegister={handleOpenRegister}
-            />
+            {activeTab === "wishlist" ? (
+              <WishlistPage
+                active={activeTab === "wishlist"}
+                userId={userId}
+                allEvents={events}
+                wishlistIds={wishlistIds}
+                wishlistLoadingMap={wishlistLoadingMap}
+                registeredIds={registeredIds}
+                onDetails={setDetailsEvent}
+                onRegister={handleOpenRegister}
+                onToggleWishlist={handleToggleWishlist}
+              />
+            ) : (
+              <EventsGrid
+                events={filteredEvents}
+                registeredIds={registeredIds}
+                activeTab={activeTab}
+                onDetails={setDetailsEvent}
+                onRegister={handleOpenRegister}
+                wishlistIds={wishlistIds}
+                wishlistLoadingMap={wishlistLoadingMap}
+                onToggleWishlist={handleToggleWishlist}
+              />
+            )}
           </main>
         </div>
 

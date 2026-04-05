@@ -1,6 +1,7 @@
 import Icon from "./icon";
+import NotificationBell from "./NotificationBell";
 
-function Topbar({ user, showProfile, onToggleProfile, onLogout }) {
+function Topbar({ user, showProfile, onToggleProfile, onLogout, unreadCount, onToggleNotifications }) {
   return (
     <header
       className="topbar"
@@ -34,6 +35,10 @@ function Topbar({ user, showProfile, onToggleProfile, onLogout }) {
             {user.department}
           </div>
         )}
+        <NotificationBell
+          unreadCount={unreadCount}
+          onToggle={onToggleNotifications}
+        />
         <button
           onClick={onToggleProfile}
           style={{
