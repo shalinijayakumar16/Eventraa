@@ -82,6 +82,13 @@ const eventSchema = new mongoose.Schema({
       registerNo: {
         type: String
       },
+      department :{
+        type: String
+      },
+      year: {
+        type: String
+      },
+      
       attended: {
         type: Boolean,
         default: false

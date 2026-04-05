@@ -495,7 +495,14 @@ function DeptDashboard() {
     if (attSaving) return;
     setAttSaving(true);
     try {
-      const payload = attStudents.map(s => ({ studentId: s.studentId, attended: s.attended }));
+      const payload = attStudents.map(s => ({
+  studentId: s.studentId,
+  name: s.name,
+  registerNo: s.registerNo,
+  department: s.department,   // ✅ ADD
+  year: s.year,               // ✅ ADD
+  attended: s.attended
+}));
       const res = await fetch(`http://localhost:5000/api/events/${attEventId}/attendance`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

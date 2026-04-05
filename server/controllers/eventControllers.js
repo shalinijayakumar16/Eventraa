@@ -123,7 +123,7 @@ exports.getEventsByDept = async (req, res) => {
   }
 };
 
-// ✅ GET ATTENDANCE (SAFE)
+// ✅ GET ATTENDANCE (UPDATED 🔥)
 exports.getAttendance = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
@@ -132,16 +132,42 @@ exports.getAttendance = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    res.json(event.attendance || []);
+    // 🔥 ALWAYS fetch registrations
+    const registrations = await Registration.find({ eventId: req.params.id });
+
+    console.log("Registrations:", registrations); // now this WILL print
+
+    // 🔥 Merge attendance with registration data
+    const students = registrations.map(r => {
+      const existing = event.attendance?.find(
+        s => s.studentId === r.userId.toString()
+      );
+
+      return {
+        studentId: r.userId.toString(),
+        name: r.name,
+        registerNo: r.registerNo,
+        department: r.department,
+        year: r.year,
+        attended: existing ? existing.attended : false
+      };
+    });
+
+    res.json(students);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// ✅ UPDATE ATTENDANCE (SAFE)
+// ✅ UPDATE ATTENDANCE (UPDATED 🔥)
 exports.updateAttendance = async (req, res) => {
   try {
-    const { studentId, attended } = req.body;
+    const { attendance } = req.body;
+
+    if (!Array.isArray(attendance)) {
+      return res.status(400).json({ message: "Attendance must be an array" });
+    }
 
     const event = await Event.findById(req.params.id);
 
@@ -149,20 +175,25 @@ exports.updateAttendance = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const student = event.attendance.find(
-      s => s.studentId === studentId
-    );
-
-    if (!student) {
-      return res.status(404).json({ message: "Student not found in attendance" });
-    }
-
-    student.attended = attended;
+    // 🔥 Replace full attendance (clean + safe)
+    event.attendance = attendance.map(a => ({
+      studentId: a.studentId,
+      name: a.name || "",
+      registerNo: a.registerNo || "",
+      department: a.department || "",
+      year: a.year || "",
+      attended: a.attended
+    }));
 
     await event.save();
 
-    res.json(event.attendance);
+    res.status(200).json({
+      message: "Attendance saved successfully",
+      attendance: event.attendance
+    });
+
   } catch (err) {
+    console.error("Attendance Error:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -205,4 +236,3 @@ exports.deleteEvent = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
