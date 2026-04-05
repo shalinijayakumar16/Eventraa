@@ -13,6 +13,9 @@ router.get("/", controller.getAllEvents);
 // GET BY DEPARTMENT
 router.get("/dept/:dept", controller.getEventsByDept);
 
+// GET RECOMMENDED EVENTS
+router.get("/recommended/:userId", controller.getRecommendedEvents);
+
 // UPDATE
 router.put("/:id", upload.single("poster"), controller.updateEvent);
 

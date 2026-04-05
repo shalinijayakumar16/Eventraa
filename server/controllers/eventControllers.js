@@ -1,5 +1,60 @@
 const Event = require("../models/Event");
 const Registration = require("../models/Registration");
+const User = require("../models/User");
+
+// ✅ GET RECOMMENDED EVENTS (LEVEL 1 SCORING)
+exports.getRecommendedEvents = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Fetch user data from database
+    const user = await User.findById(userId).select("department year interests interest");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Fetch all available events
+    const events = await Event.find({});
+
+    // Calculate recommendation score for each event
+    const scoredEvents = events.map((event) => {
+      let score = 0;
+
+      if (event.department && user.department && event.department === user.department) {
+        score += 3;
+      }
+
+      if (event.year && user.year && String(event.year) === String(user.year)) {
+        score += 2;
+      }
+
+      const userInterests = Array.isArray(user.interests)
+        ? user.interests
+        : user.interest
+          ? [user.interest]
+          : [];
+
+      if (event.type && userInterests.includes(event.type)) {
+        score += 2;
+      }
+
+      // Higher score = more relevant to the user
+      return {
+        ...event.toObject(),
+        score,
+      };
+    });
+
+    // Sort events based on score
+    const sortedEvents = scoredEvents.sort((a, b) => b.score - a.score);
+
+    // Return top recommended events
+    res.json(sortedEvents.slice(0, 5));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
 // ✅ CREATE EVENT
 exports.createEvent = async (req, res) => {

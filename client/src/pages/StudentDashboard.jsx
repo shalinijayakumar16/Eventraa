@@ -13,6 +13,7 @@ import TabBar            from "../components/TabBar";
 import FiltersRow        from "../components/FiltersRow";
 import EventsGrid        from "../components/EventsGrid";
 import WishlistPage      from "../components/WishlistPage";
+import RecommendedEvents from "../components/RecommendedEvents";
 import EventDetailsModal from "../components/EventDetailsModal";
 import RegistrationModal from "../components/RegistrationModal";
 import NotificationPanel from "../components/NotificationPanel";
@@ -357,6 +358,16 @@ function StudentDashboard() {
               registeredCount={registeredCount}
               upcomingCount={upcomingCount}
               departmentCount={departmentCount}
+            />
+
+            <RecommendedEvents
+              userId={userId}
+              registeredIds={registeredIds}
+              wishlistIds={wishlistIds}
+              wishlistLoadingMap={wishlistLoadingMap}
+              onToggleWishlist={handleToggleWishlist}
+              onDetails={setDetailsEvent}
+              onRegister={handleOpenRegister}
             />
 
             <TabBar
