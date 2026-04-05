@@ -1,0 +1,116 @@
+import Icon from "./icon";
+import CountdownChip from "./CountdownChip";
+import { TYPE_STYLE } from "../constants/config";
+
+function EventCard({ event, alreadyRegistered, onDetails, onRegister }) {
+  const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
+  const isPast    = new Date(event.date) < new Date();
+
+  return (
+    <div className="event-card">
+      {/* Poster / placeholder */}
+      {event.poster ? (
+        <div style={{ position: "relative", height: 160, overflow: "hidden" }}>
+          <img
+            src={`http://localhost:5000/${event.poster}`}
+            alt="poster"
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(7,9,26,0.7), transparent)" }} />
+          {isPast && (
+            <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", fontSize: 11, color: "#94A3B8", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(255,255,255,0.1)" }}>Past</div>
+          )}
+          {alreadyRegistered && (
+            <div style={{ position: "absolute", top: 10, left: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(74,222,128,0.15)", backdropFilter: "blur(8px)", fontSize: 11, color: "#4ade80", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(74,222,128,0.3)", display: "flex", alignItems: "center", gap: 4 }}>
+              <Icon name="check" size={10} color="#4ade80" /> Registered
+            </div>
+          )}
+        </div>
+      ) : (
+        <div style={{ height: 120, background: "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(236,72,153,0.08))", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+          <Icon name="calendar" size={32} color="rgba(99,102,241,0.3)" />
+          {isPast && (
+            <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(0,0,0,0.3)", fontSize: 11, color: "#64748B", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(255,255,255,0.07)" }}>Past</div>
+          )}
+          {alreadyRegistered && (
+            <div style={{ position: "absolute", top: 10, left: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(74,222,128,0.12)", fontSize: 11, color: "#4ade80", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(74,222,128,0.25)", display: "flex", alignItems: "center", gap: 4 }}>
+              <Icon name="check" size={10} color="#4ade80" /> Registered
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Card body */}
+      <div style={{ padding: "18px 18px 14px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
+        {/* Title + badge */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+          <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 15, color: "#E2E8F0", letterSpacing: "-0.01em", lineHeight: 1.3 }}>
+            {event.title}
+          </h3>
+          <span className="badge-pill" style={{ background: typeStyle.bg, border: `1px solid ${typeStyle.border}`, color: typeStyle.color }}>
+            {event.type}
+          </span>
+        </div>
+
+        {/* Meta */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#94A3B8", fontSize: 13 }}>
+            <Icon name="filter" size={13} color="#6366F1" />
+            {event.department}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#94A3B8", fontSize: 13 }}>
+            <Icon name="calendar" size={13} color="#8B5CF6" />
+            {new Date(event.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+          </div>
+          {event.applyBy && (
+            <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#94A3B8", fontSize: 13 }}>
+              <Icon name="clock" size={13} color="#F59E0B" />
+              Apply by {new Date(event.applyBy).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+            </div>
+          )}
+          {event.venue && (
+            <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#94A3B8", fontSize: 13 }}>
+              <Icon name="map" size={13} color="#EC4899" />
+              {event.venue}
+            </div>
+          )}
+        </div>
+
+        {/* Countdown chips */}
+        {!isPast && (
+          <div style={{ marginTop: 2 }}>
+            <CountdownChip event={event} />
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 8 }}>
+          <button
+            className="btn-ghost"
+            style={{ flex: 1, justifyContent: "center", fontSize: 12, padding: "9px 10px" }}
+            onClick={() => onDetails(event)}
+          >
+            <Icon name="info" size={13} color="#94A3B8" />
+            Details
+          </button>
+          <button
+            className="btn-primary-glow"
+            style={{ flex: 1, justifyContent: "center", fontSize: 12, padding: "9px 10px" }}
+            disabled={alreadyRegistered || isPast}
+            onClick={() => onRegister(event)}
+          >
+            {alreadyRegistered ? (
+              <><Icon name="check" size={13} color="#4ade80" /> Registered</>
+            ) : isPast ? (
+              <>Ended</>
+            ) : (
+              <>Register <Icon name="arrowRight" size={13} color="white" /></>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default EventCard;

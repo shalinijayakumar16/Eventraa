@@ -6,18 +6,16 @@ exports.registerUser = async (req, res) => {
   try {
     const { name, registerNo, email, password, department, year } = req.body;
 
-    // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = new User({
       name,
-      registerNo,
+      registerNo: registerNo.toUpperCase(),
       email,
       password: hashedPassword,
       department,
@@ -37,7 +35,10 @@ exports.loginUser = async (req, res) => {
   try {
     const { registerNo, password } = req.body;
 
-    const user = await User.findOne({ registerNo: registerNo.toUpperCase()});
+    const user = await User.findOne({
+      registerNo: registerNo.toUpperCase()
+    });
+
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
@@ -56,7 +57,6 @@ exports.loginUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 // 🔥 DEPARTMENT LOGIN
 exports.deptLogin = async (req, res) => {
@@ -85,7 +85,43 @@ exports.deptLogin = async (req, res) => {
 
   res.json({
     message: "Department login successful",
-    department: dept.deptId,
-    
+    department: dept.deptId
   });
+};
+
+// ✅ GET PROFILE (by ID)
+exports.getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching profile" });
+  }
+};
+
+// ✅ UPDATE PROFILE
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const { name, department, year, profilePic } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        department,
+        year,
+        profilePic
+      },
+      { new: true }
+    ).select("-password");
+
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating profile" });
+  }
 };

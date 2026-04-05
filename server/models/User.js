@@ -25,10 +25,16 @@ const userSchema = new mongoose.Schema({
   year: {
     type: String
   },
+   // ✅ NEW FIELD
+  profilePic: {
+    type: String,
+    default: ""
+  },
   isActive: {
     type: Boolean,
     default: true
   }
 }, { timestamps: true });
+
 
 module.exports = mongoose.model("User", userSchema);
