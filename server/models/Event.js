@@ -20,6 +20,10 @@ const eventSchema = new mongoose.Schema({
     required: true
   },
 
+  deadline: {
+    type: Date
+  },
+
   venue: {
     type: String
   },

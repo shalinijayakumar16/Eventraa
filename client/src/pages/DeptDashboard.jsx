@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import CreateEvent from "../components/CreateEvent";
 
 /* ─── Styles ────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -361,6 +362,7 @@ function DeptDashboard() {
   const [pastEvents, setPastEvents]         = useState([]);
   const [showForm, setShowForm]             = useState(false);
   const [editingEvent, setEditingEvent]     = useState(null);
+  const [showCreate, setShowCreate]         = useState(false);
   const [saveLoading, setSaveLoading]       = useState(false);
   const [view, setView]                     = useState("my");
   const [exportLoading, setExportLoading]   = useState(false);
@@ -403,6 +405,11 @@ function DeptDashboard() {
 
   /* ── Logout ─────────────────────────────────────────────────────────────── */
   const handleLogout = () => { localStorage.removeItem("token"); localStorage.removeItem("deptId"); navigate("/dept-login"); };
+
+  const handleCreateSuccess = () => {
+    setShowCreate(false);
+    fetchEvents();
+  };
 
   const fetchEvents = async () => {
     try {
@@ -585,6 +592,7 @@ function DeptDashboard() {
   };
 
   const handleEdit = (ev) => {
+    setShowCreate(false);
     setEditingEvent(ev);
     setForm({ title:ev.title, description:ev.description, date:ev.date.split("T")[0], venue:ev.venue, applyBy:ev.applyBy?ev.applyBy.split("T")[0]:"" });
     setFile(null); setFileName(""); setFormFields(ev.formFields||[]);
@@ -592,13 +600,13 @@ function DeptDashboard() {
   };
 
   const openCreate = () => {
+    setShowForm(false);
     setEditingEvent(null);
-    setForm({ title:"", description:"", date:"", venue:"", applyBy:"" });
-    setFile(null); setFileName(""); setFormFields([]);
-    setShowForm(true);
+    setShowCreate(true);
   };
 
   const closeForm = () => { setShowForm(false); setEditingEvent(null); setFormFields([]); };
+  const closeCreate = () => { setShowCreate(false); };
 
   let displayEvents = eventFilter==="upcoming" ? upcomingEvents : eventFilter==="past" ? pastEvents : [...upcomingEvents,...pastEvents];
 
@@ -742,6 +750,15 @@ function DeptDashboard() {
             </div>
           )}
         </main>
+
+        {showCreate && (
+          <CreateEvent
+            open={showCreate}
+            department={dept}
+            onClose={closeCreate}
+            onCreated={handleCreateSuccess}
+          />
+        )}
 
         {/* ══════════════════════════════════════════════════════════════════
             CREATE / EDIT MODAL  (unchanged)

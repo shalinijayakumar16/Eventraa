@@ -14,8 +14,13 @@ exports.createEvent = async (req, res) => {
       }
     }
 
+    const deadline = req.body.deadline || req.body.applyBy;
+
     const eventData = {
       ...req.body,
+      applyBy: deadline,
+      deadline,
+      maxParticipants: req.body.maxParticipants ? Number(req.body.maxParticipants) : undefined,
       formFields,
       poster: req.file ? req.file.path.replace(/\\/g, "/") : null
     };
@@ -202,6 +207,15 @@ exports.updateAttendance = async (req, res) => {
 exports.updateEvent = async (req, res) => {
   try {
     let updateData = { ...req.body };
+
+    if (req.body.deadline || req.body.applyBy) {
+      updateData.applyBy = req.body.deadline || req.body.applyBy;
+      updateData.deadline = req.body.deadline || req.body.applyBy;
+    }
+
+    if (req.body.maxParticipants !== undefined) {
+      updateData.maxParticipants = Number(req.body.maxParticipants);
+    }
 
     if (req.body.formFields) {
       try {

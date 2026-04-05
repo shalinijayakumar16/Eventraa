@@ -4,6 +4,7 @@ const controller = require("../controllers/eventControllers");
 const upload = require("../middleware/upload");
 
 // CREATE EVENT
+router.post("/create", upload.single("poster"), controller.createEvent);
 router.post("/", upload.single("poster"), controller.createEvent);
 
 // GET ALL EVENTS
