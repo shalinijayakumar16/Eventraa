@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import BlobBg from "../components/BlobBg";
+import Icon from "../components/icon";
+import { STYLES } from "../constants/styles";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -55,93 +58,121 @@ function AdminDashboard() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc", padding: "24px 16px" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <div>
-            <h1 style={{ margin: 0, color: "#0f172a" }}>Admin Dashboard</h1>
-            <p style={{ margin: "4px 0 0", color: "#64748b" }}>Manage departments and coordinators</p>
+    <>
+      <style>{STYLES}</style>
+      <div style={{ minHeight: "100vh", background: "#07091A", color: "#E2E8F0", position: "relative", overflow: "hidden" }}>
+        <BlobBg />
+
+        {/* Match admin UI with existing dashboards */}
+        <header style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(7,9,26,0.85)", backdropFilter: "blur(24px)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "0 32px", height: 68, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #6366F1, #8B5CF6, #EC4899)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 16px rgba(99,102,241,0.45)" }}>E</div>
+            <div>
+              <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 19, background: "linear-gradient(135deg, #E2E8F0, #A5B4FC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "-0.02em" }}>Eventra</span>
+              <span style={{ color: "#475569", fontSize: 13, marginLeft: 8, fontFamily: "'DM Sans', sans-serif" }}>/ Admin</span>
+            </div>
           </div>
-          <button
-            onClick={handleLogout}
-            style={{ border: "1px solid #ef4444", background: "white", color: "#ef4444", borderRadius: 10, padding: "10px 14px", fontWeight: 700, cursor: "pointer" }}
-          >
-            Logout
+
+          <button className="btn-logout" onClick={handleLogout}>
+            <Icon name="logout" size={15} color="#FCA5A5" />
+            <span>Logout</span>
           </button>
-        </div>
+        </header>
 
-        <section style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 16, padding: 16, marginBottom: 18 }}>
-          <h2 style={{ fontSize: 20, color: "#0f172a", margin: "0 0 12px" }}>Add Department</h2>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <input
-              type="text"
-              value={newDepartmentName}
-              onChange={(event) => setNewDepartmentName(event.target.value)}
-              placeholder="Department name (e.g., ECE)"
-              style={{ flex: "1 1 280px", minWidth: 220, padding: "10px 12px", borderRadius: 10, border: "1px solid #cbd5e1" }}
-            />
-            <button
-              onClick={handleAddDepartment}
-              style={{ border: "none", background: "#2563eb", color: "white", borderRadius: 10, padding: "10px 14px", fontWeight: 700, cursor: "pointer" }}
-            >
-              Add
-            </button>
+        <main style={{ position: "relative", zIndex: 1, padding: "32px 32px 56px", maxWidth: 1240, margin: "0 auto" }}>
+          <div className="animate-fadeUp" style={{ marginBottom: 28 }}>
+            <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 3vw, 2.4rem)", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 6 }}>
+              <span className="gradient-text">Admin</span>{" "}
+              <span style={{ color: "#E2E8F0" }}>Dashboard</span>
+            </h1>
+            <p style={{ color: "#64748B", fontSize: 15 }}>Manage departments and coordinators from one place</p>
           </div>
-        </section>
 
-        <section style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: 16, padding: 16 }}>
-          <h2 style={{ fontSize: 20, color: "#0f172a", margin: "0 0 12px" }}>Manage Departments</h2>
+          <div style={{ display: "grid", gap: 18 }}>
+            <section className="animate-fadeUp" style={{ animationDelay: "0.12s", background: "rgba(255,255,255,0.035)", backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 22, boxShadow: "0 18px 48px rgba(0,0,0,0.25)", padding: 22 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 12, alignItems: "center", marginBottom: 16 }}>
+                <div>
+                  <h2 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 20, color: "#E2E8F0", marginBottom: 4 }}>Add Department</h2>
+                  <p style={{ color: "#64748B", fontSize: 13 }}>Create a department entry using the same UI language as the rest of the app.</p>
+                </div>
+              </div>
 
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 650 }}>
-              <thead>
-                <tr style={{ background: "#f1f5f9" }}>
-                  <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid #e2e8f0", color: "#334155" }}>Department</th>
-                  <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid #e2e8f0", color: "#334155" }}>Coordinator</th>
-                  <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid #e2e8f0", color: "#334155" }}>Assign Coordinator</th>
-                  <th style={{ textAlign: "left", padding: "10px 12px", borderBottom: "1px solid #e2e8f0", color: "#334155" }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                <input
+                  type="text"
+                  value={newDepartmentName}
+                  onChange={(event) => setNewDepartmentName(event.target.value)}
+                  placeholder="Department name (e.g., ECE)"
+                  className="form-input"
+                  style={{ flex: "1 1 280px", minWidth: 220 }}
+                />
+                <button onClick={handleAddDepartment} className="btn-primary-glow" style={{ justifyContent: "center" }}>
+                  <Icon name="plus" size={14} color="white" />
+                  Add Department
+                </button>
+              </div>
+            </section>
+
+            <section className="animate-fadeUp" style={{ animationDelay: "0.18s", background: "rgba(255,255,255,0.035)", backdropFilter: "blur(24px) saturate(180%)", WebkitBackdropFilter: "blur(24px) saturate(180%)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 22, boxShadow: "0 18px 48px rgba(0,0,0,0.25)", padding: 22 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 12, alignItems: "center", marginBottom: 18 }}>
+                <div>
+                  <h2 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 20, color: "#E2E8F0", marginBottom: 4 }}>Manage Departments</h2>
+                  <p style={{ color: "#64748B", fontSize: 13 }}>Keep the department list updated and assign coordinators dynamically.</p>
+                </div>
+                <div style={{ color: "#475569", fontSize: 13 }}>
+                  {departments.length} department{departments.length !== 1 ? "s" : ""}
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gap: 14 }}>
                 {departments.map((department) => (
-                  <tr key={department.name}>
-                    <td style={{ padding: "12px", borderBottom: "1px solid #f1f5f9", color: "#0f172a", fontWeight: 700 }}>{department.name}</td>
-                    <td style={{ padding: "12px", borderBottom: "1px solid #f1f5f9", color: "#334155" }}>
-                      {department.coordinator || "Not assigned"}
-                    </td>
-                    <td style={{ padding: "12px", borderBottom: "1px solid #f1f5f9" }}>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        <input
-                          type="text"
-                          value={newCoordinatorMap[department.name] || ""}
-                          onChange={(event) => handleCoordinatorInputChange(department.name, event.target.value)}
-                          placeholder="Coordinator name"
-                          style={{ flex: "1 1 210px", minWidth: 150, padding: "8px 10px", borderRadius: 8, border: "1px solid #cbd5e1" }}
-                        />
-                        <button
-                          onClick={() => handleAssignCoordinator(department.name)}
-                          style={{ border: "none", background: "#0ea5e9", color: "white", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}
-                        >
-                          Assign
-                        </button>
+                  <div key={department.name} className="event-card" style={{ padding: 18, display: "grid", gap: 14 }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+                      <div>
+                        <div className="dept-badge" style={{ marginBottom: 8 }}>{department.name}</div>
+                        <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 16, color: "#E2E8F0", marginBottom: 4 }}>{department.name}</h3>
+                        <p style={{ color: "#64748B", fontSize: 13 }}>
+                          Coordinator: <span style={{ color: "#CBD5E1", fontWeight: 600 }}>{department.coordinator || "Not assigned"}</span>
+                        </p>
                       </div>
-                    </td>
-                    <td style={{ padding: "12px", borderBottom: "1px solid #f1f5f9" }}>
+
                       <button
                         onClick={() => handleRemoveDepartment(department.name)}
-                        style={{ border: "1px solid #ef4444", background: "white", color: "#ef4444", borderRadius: 8, padding: "8px 12px", fontWeight: 700, cursor: "pointer" }}
+                        className="btn-logout"
+                        style={{ padding: "8px 14px", fontSize: 12 }}
                       >
+                        <Icon name="trash" size={13} color="#FCA5A5" />
                         Delete
                       </button>
-                    </td>
-                  </tr>
+                    </div>
+
+                    {/* Reuse shared components for consistency */}
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                      <input
+                        type="text"
+                        value={newCoordinatorMap[department.name] || ""}
+                        onChange={(event) => handleCoordinatorInputChange(department.name, event.target.value)}
+                        placeholder="Coordinator name"
+                        className="form-input"
+                        style={{ flex: "1 1 260px", minWidth: 220 }}
+                      />
+                      <button
+                        onClick={() => handleAssignCoordinator(department.name)}
+                        className="btn-ghost"
+                        style={{ padding: "10px 16px" }}
+                      >
+                        <Icon name="check" size={13} color="#A5B4FC" />
+                        Assign Coordinator
+                      </button>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </section>
           </div>
-        </section>
+        </main>
       </div>
-    </div>
+    </>
   );
 }
 
