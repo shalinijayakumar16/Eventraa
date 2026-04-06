@@ -10,6 +10,11 @@ router.post("/", upload.single("poster"), controller.createEvent);
 // GET ALL EVENTS
 router.get("/", controller.getAllEvents);
 
+// Event approval routes
+router.get("/pending", controller.getPendingEvents);
+router.put("/approve/:id", controller.approveEvent);
+router.delete("/reject/:id", controller.rejectEvent);
+
 // GET BY DEPARTMENT
 router.get("/dept/:dept", controller.getEventsByDept);
 

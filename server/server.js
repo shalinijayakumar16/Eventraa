@@ -2,7 +2,6 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
-const cron = require("node-cron");
 const Event = require("./models/Event");
 const registrationRoutes = require("./routes/registrationRoutes");
 
@@ -28,22 +27,19 @@ app.use("/api/registrations", registrationRoutes);
 app.use("/api/departments", require("./routes/departmentRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 
-// 🔥 CRON JOB — mark expired events
-// TEST MODE (runs every 1 minute)
-cron.schedule("* * * * *", async () => {
-  console.log("CRON RUNNING...");
-
+const normalizeLegacyEventStatuses = async () => {
   try {
+    // Keep older events compatible with the new approval workflow
     await Event.updateMany(
-      { date: { $lt: new Date() } },
-      { status: "expired" }
+      { status: { $in: ["active", "expired"] } },
+      { $set: { status: "approved" } }
     );
-
-    console.log("Expired events updated");
   } catch (error) {
-    console.log("Cron error:", error.message);
+    console.log("Status migration error:", error.message);
   }
-});
+};
+
+normalizeLegacyEventStatuses();
 
 // Test route
 app.get("/", (req, res) => {

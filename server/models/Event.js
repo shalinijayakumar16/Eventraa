@@ -69,9 +69,11 @@ const eventSchema = new mongoose.Schema({
     }
   ],
 
+  // Track whether event is approved by admin
   status: {
     type: String,
-    default: "active"
+    enum: ["pending", "approved"],
+    default: "pending"
   },
 
   // ✅ NEW: Attendance Tracking

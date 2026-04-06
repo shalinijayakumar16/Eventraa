@@ -14,8 +14,8 @@ exports.getRecommendedEvents = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Fetch all available events
-    const events = await Event.find({});
+    // Hide unapproved events from students in recommendations
+    const events = await Event.find({ status: "approved" });
 
     // Calculate recommendation score for each event
     const scoredEvents = events.map((event) => {
@@ -73,6 +73,8 @@ exports.createEvent = async (req, res) => {
 
     const eventData = {
       ...req.body,
+      // New events require admin approval before being visible
+      status: "pending",
       applyBy: deadline,
       deadline,
       maxParticipants: req.body.maxParticipants ? Number(req.body.maxParticipants) : undefined,
@@ -93,7 +95,10 @@ exports.getAllEvents = async (req, res) => {
   try {
     const { department, type, userId } = req.query;
 
-    let filter = {};
+    let filter = {
+      // Hide unapproved events from students
+      status: "approved",
+    };
     if (department) filter.department = department;
     if (type) filter.type = type;
 
@@ -301,6 +306,50 @@ exports.deleteEvent = async (req, res) => {
   try {
     await Event.findByIdAndDelete(req.params.id);
     res.json({ message: "Deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Fetch events waiting for admin approval
+exports.getPendingEvents = async (req, res) => {
+  try {
+    const events = await Event.find({ status: "pending" }).sort({ createdAt: -1 });
+    res.json(events);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Approve event so it becomes visible to students
+exports.approveEvent = async (req, res) => {
+  try {
+    const event = await Event.findByIdAndUpdate(
+      req.params.id,
+      { status: "approved" },
+      { new: true }
+    );
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.json(event);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Reject event to prevent spam
+exports.rejectEvent = async (req, res) => {
+  try {
+    const event = await Event.findByIdAndDelete(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.json({ message: "Event rejected and removed" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

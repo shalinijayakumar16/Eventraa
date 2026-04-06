@@ -4,6 +4,7 @@ import BlobBg from "../components/BlobBg";
 import Icon from "../components/icon";
 import { STYLES } from "../constants/styles";
 import AdminAnalytics from "../components/AdminAnalytics";
+import EventApproval from "../components/EventApproval";
 
 const API_BASE = "http://localhost:5000";
 
@@ -291,6 +292,13 @@ function AdminDashboard() {
               <Icon name="trending" size={14} color={activeSection === "analytics" ? "#fff" : "#64748B"} />
               Analytics
             </button>
+            <button
+              className={`view-tab ${activeSection === "approvals" ? "active" : "inactive"}`}
+              onClick={() => setActiveSection("approvals")}
+            >
+              <Icon name="check" size={14} color={activeSection === "approvals" ? "#fff" : "#64748B"} />
+              Event Approvals
+            </button>
           </div>
 
           <div style={{ display: "grid", gap: 18 }}>
@@ -522,6 +530,8 @@ function AdminDashboard() {
             )}
 
             {activeSection === "analytics" && <AdminAnalytics />}
+
+            {activeSection === "approvals" && <EventApproval />}
           </div>
         </main>
       </div>
