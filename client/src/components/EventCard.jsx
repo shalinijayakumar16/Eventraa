@@ -11,6 +11,9 @@ function EventCard({
   wishlistLoading,
   onToggleWishlist,
 }) {
+  // Hide unapproved events
+  if (event.approvalStatus && event.approvalStatus !== "approved") return null;
+
   const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
   const isPast    = new Date(event.date) < new Date();
 
@@ -56,6 +59,10 @@ function EventCard({
             {event.title}
           </h3>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            {/* Indicate event is verified by admin */}
+            <span className="badge-pill" style={{ background: "rgba(16,185,129,0.14)", border: "1px solid rgba(16,185,129,0.34)", color: "#6EE7B7" }}>
+              <Icon name="check" size={10} color="#6EE7B7" /> Approved
+            </span>
             <span className="badge-pill" style={{ background: typeStyle.bg, border: `1px solid ${typeStyle.border}`, color: typeStyle.color }}>
               {event.type}
             </span>
@@ -128,11 +135,19 @@ function EventCard({
           <button
             className="btn-primary-glow"
             style={{ flex: 1, justifyContent: "center", fontSize: 12, padding: "9px 10px" }}
-            disabled={alreadyRegistered || isPast}
-            onClick={() => onRegister(event)}
+            disabled={isPast}
+            onClick={() => {
+              // Show QR only for registered users
+              if (alreadyRegistered) {
+                onDetails(event);
+                return;
+              }
+
+              onRegister(event);
+            }}
           >
             {alreadyRegistered ? (
-              <><Icon name="check" size={13} color="#4ade80" /> Registered</>
+              <><Icon name="check" size={13} color="#4ade80" /> View QR</>
             ) : isPast ? (
               <>Ended</>
             ) : (

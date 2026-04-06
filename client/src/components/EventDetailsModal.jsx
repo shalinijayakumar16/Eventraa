@@ -1,10 +1,21 @@
+import { useMemo, useState } from "react";
+import { QRCodeCanvas } from "qrcode.react";
 import Icon from "./icon";
 import CountdownChip from "./CountdownChip";
 import { TYPE_STYLE } from "../constants/config";
 
-function EventDetailsModal({ event, alreadyJoined, onClose, onRegister }) {
+function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, userId }) {
   const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
   const isPast    = new Date(event.date) < new Date();
+  const [showQR, setShowQR] = useState(false);
+
+  const qrData = useMemo(() => {
+    // Generate QR using userId and eventId
+    return JSON.stringify({
+      userId: userId || "",
+      eventId: event._id,
+    });
+  }, [event._id, userId]);
 
   const metaRows = [
     { icon: "filter",   color: "#6366F1", label: "Department", value: event.department },
@@ -99,7 +110,43 @@ function EventDetailsModal({ event, alreadyJoined, onClose, onRegister }) {
                   : <>Register Now <Icon name="arrowRight" size={14} color="white" /></>
               }
             </button>
+
+            {/* Show QR button only if user is registered */}
+            {alreadyJoined && (
+              <button
+                className="btn-ghost"
+                style={{ padding: "11px 18px" }}
+                onClick={() => setShowQR(true)}
+              >
+                <Icon name="check" size={13} color="#6EE7B7" />
+                View QR
+              </button>
+            )}
           </div>
+
+          {/* Display QR for attendance scanning */}
+          {showQR && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(7,9,26,0.78)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 240 }}>
+              <div style={{ width: "min(92vw, 360px)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.1)", background: "#0D1130", boxShadow: "0 30px 80px rgba(0,0,0,0.5)", padding: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                  <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 17, color: "#E2E8F0" }}>Attendance QR</h3>
+                  <button
+                    className="btn-ghost"
+                    style={{ padding: "6px 10px", fontSize: 12 }}
+                    onClick={() => setShowQR(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+
+                <div style={{ borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)", padding: 16, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <QRCodeCanvas value={qrData} size={210} bgColor="#ffffff" fgColor="#0F172A" includeMargin />
+                </div>
+
+                <p style={{ color: "#94A3B8", fontSize: 13, textAlign: "center" }}>Show this QR for attendance</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

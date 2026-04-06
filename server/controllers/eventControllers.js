@@ -96,7 +96,7 @@ exports.getAllEvents = async (req, res) => {
     const { department, type, userId } = req.query;
 
     let filter = {
-      // Hide unapproved events from students
+      // Students should only see approved events
       status: "approved",
     };
     if (department) filter.department = department;
@@ -123,6 +123,8 @@ exports.getAllEvents = async (req, res) => {
 
       const eventObj = {
         ...e._doc,
+        // Status can be used for advanced UI if needed
+        approvalStatus: e.status,
         status: isExpired ? "expired" : "active",
         isRegistered: registeredEventIds.includes(e._id.toString())
       };

@@ -69,7 +69,7 @@ const eventSchema = new mongoose.Schema({
     }
   ],
 
-  // Track whether event is approved by admin
+  // Each event must be approved before visible to students
   status: {
     type: String,
     enum: ["pending", "approved"],
