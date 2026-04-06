@@ -8,6 +8,9 @@ import DeptLogin from "./pages/DeptLogin";
 import DeptDashboard from "./pages/DeptDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import Profile from "./pages/Profile";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminRoute from "./components/AdminRoute";
 
 
 
@@ -23,6 +26,15 @@ function App() {
 
         <Route path="/student" element={<StudentDashboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route
+          path="/admin-dashboard"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
         
 
       </Routes>
