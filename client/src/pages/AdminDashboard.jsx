@@ -1,51 +1,140 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BlobBg from "../components/BlobBg";
 import Icon from "../components/icon";
 import { STYLES } from "../constants/styles";
 
+const API_BASE = "http://localhost:5000";
+
 function AdminDashboard() {
   const navigate = useNavigate();
   const [newDepartmentName, setNewDepartmentName] = useState("");
   const [newCoordinatorMap, setNewCoordinatorMap] = useState({});
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [departmentsLoading, setDepartmentsLoading] = useState(false);
 
   // Manage department list
-  const [departments, setDepartments] = useState([
-    { name: "CSE", coordinator: "" },
-    { name: "IT", coordinator: "" },
-  ]);
+  const [departments, setDepartments] = useState([]);
+
+  // Fetch department data from backend
+  const fetchDepartments = async () => {
+    setDepartmentsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/departments`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch departments");
+      }
+
+      const payload = await response.json();
+      setDepartments(Array.isArray(payload) ? payload : []);
+    } catch (error) {
+      setDepartments([]);
+      showFeedback("Unable to load departments");
+    } finally {
+      setDepartmentsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  const showFeedback = (message) => {
+    setFeedbackMessage(message);
+    setTimeout(() => setFeedbackMessage(""), 2500);
+  };
 
   // Add department
-  const handleAddDepartment = () => {
+  const handleAddDepartment = async () => {
     const name = newDepartmentName.trim().toUpperCase();
     if (!name) return;
 
     const exists = departments.some((department) => department.name.toLowerCase() === name.toLowerCase());
-    if (exists) return;
+    if (exists) {
+      showFeedback("Department already exists");
+      return;
+    }
 
-    // Update UI state dynamically
-    setDepartments((previous) => [...previous, { name, coordinator: "" }]);
-    setNewDepartmentName("");
+    try {
+      // Store coordinator in MongoDB
+      const response = await fetch(`${API_BASE}/api/departments/coordinator`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, coordinator: "" }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.message || "Failed to add department");
+      }
+
+      // Update UI state dynamically
+      setNewDepartmentName("");
+      showFeedback("Department added successfully");
+      fetchDepartments();
+    } catch (error) {
+      showFeedback(error.message || "Unable to add department");
+    }
   };
 
   // Remove department
-  const handleRemoveDepartment = (departmentName) => {
-    // Update UI state dynamically
-    setDepartments((previous) => previous.filter((department) => department.name !== departmentName));
+  const handleRemoveDepartment = async (departmentName) => {
+    try {
+      const response = await fetch(`${API_BASE}/api/departments/${encodeURIComponent(departmentName)}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.message || "Failed to remove department");
+      }
+
+      // Update UI state dynamically
+      showFeedback("Department removed");
+      fetchDepartments();
+    } catch (error) {
+      showFeedback(error.message || "Unable to remove department");
+    }
   };
 
   // Update coordinator
-  const handleAssignCoordinator = (departmentName) => {
+  const handleAssignCoordinator = async (departmentName) => {
     const coordinatorValue = (newCoordinatorMap[departmentName] || "").trim();
 
-    // Update UI state dynamically
-    setDepartments((previous) =>
-      previous.map((department) =>
-        department.name === departmentName
-          ? { ...department, coordinator: coordinatorValue }
-          : department
-      )
-    );
+    if (!coordinatorValue) {
+      showFeedback("Please enter coordinator name");
+      return;
+    }
+
+    try {
+      // Save coordinator in MongoDB
+      const response = await fetch(`${API_BASE}/api/departments/coordinator`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: departmentName, coordinator: coordinatorValue }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.message || "Failed to update coordinator");
+      }
+
+      await response.json();
+
+      // Update UI state dynamically
+      setNewCoordinatorMap((previous) => ({
+        ...previous,
+        [departmentName]: "",
+      }));
+
+      // Fetch latest department list so UI always reflects DB state
+      await fetchDepartments();
+
+      showFeedback("Coordinator assigned successfully");
+    } catch (error) {
+      showFeedback(error.message || "Unable to assign coordinator");
+    }
   };
 
   const handleCoordinatorInputChange = (departmentName, value) => {
@@ -80,6 +169,12 @@ function AdminDashboard() {
         </header>
 
         <main style={{ position: "relative", zIndex: 1, padding: "32px 32px 56px", maxWidth: 1240, margin: "0 auto" }}>
+          {feedbackMessage && (
+            <div style={{ marginBottom: 16, background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.35)", borderRadius: 12, padding: "10px 14px", color: "#6EE7B7", fontSize: 13, fontFamily: "'Outfit', sans-serif", fontWeight: 600 }}>
+              {feedbackMessage}
+            </div>
+          )}
+
           <div className="animate-fadeUp" style={{ marginBottom: 28 }}>
             <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 3vw, 2.4rem)", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 6 }}>
               <span className="gradient-text">Admin</span>{" "}
@@ -107,7 +202,7 @@ function AdminDashboard() {
                   style={{ flex: "1 1 280px", minWidth: 220 }}
                 />
                 <button onClick={handleAddDepartment} className="btn-primary-glow" style={{ justifyContent: "center" }}>
-                  <Icon name="plus" size={14} color="white" />
+                  <Icon name="zap" size={14} color="white" />
                   Add Department
                 </button>
               </div>
@@ -125,6 +220,14 @@ function AdminDashboard() {
               </div>
 
               <div style={{ display: "grid", gap: 14 }}>
+                {departmentsLoading && (
+                  <div style={{ color: "#64748B", fontSize: 14 }}>Loading departments...</div>
+                )}
+
+                {!departmentsLoading && departments.length === 0 && (
+                  <div style={{ color: "#64748B", fontSize: 14 }}>No departments available</div>
+                )}
+
                 {departments.map((department) => (
                   <div key={department.name} className="event-card" style={{ padding: 18, display: "grid", gap: 14 }}>
                     <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
@@ -141,7 +244,7 @@ function AdminDashboard() {
                         className="btn-logout"
                         style={{ padding: "8px 14px", fontSize: 12 }}
                       >
-                        <Icon name="trash" size={13} color="#FCA5A5" />
+                        <Icon name="x" size={13} color="#FCA5A5" />
                         Delete
                       </button>
                     </div>

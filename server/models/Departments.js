@@ -20,4 +20,4 @@ const departmentSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model("Department", departmentSchema);
+module.exports = mongoose.models.DepartmentAuth || mongoose.model("DepartmentAuth", departmentSchema);

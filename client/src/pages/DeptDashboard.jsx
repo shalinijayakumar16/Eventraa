@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateEvent from "../components/CreateEvent";
 
+const API_BASE = "http://localhost:5000";
+
 /* ─── Styles ────────────────────────────────────────────────────────────── */
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap');
@@ -391,6 +393,7 @@ function DeptDashboard() {
   const [toast, setToast]                   = useState(null);  // {msg, icon}
 
   const dept = localStorage.getItem("deptId");
+  const [deptCoordinator, setDeptCoordinator] = useState("");
 
   /* ── Toast helper ──────────────────────────────────────────────────────── */
   const showToast = (msg, icon = "check") => {
@@ -423,6 +426,29 @@ function DeptDashboard() {
 
   useEffect(() => { fetchEvents(); }, [view]);
   useEffect(() => { setEventFilter("all"); }, [view]);
+
+  useEffect(() => {
+    const fetchDepartmentCoordinator = async () => {
+      try {
+        // Fetch department data from backend
+        const response = await fetch(`${API_BASE}/api/departments`);
+        const departments = await response.json();
+
+        // Match logged-in department
+        const currentDept = (Array.isArray(departments) ? departments : []).find(
+          (item) => String(item.name || "").toUpperCase() === String(dept || "").toUpperCase()
+        );
+
+        setDeptCoordinator(currentDept?.coordinator || "");
+      } catch (error) {
+        setDeptCoordinator("");
+      }
+    };
+
+    if (dept) {
+      fetchDepartmentCoordinator();
+    }
+  }, [dept]);
 
   const deleteEvent = async (id) => { await fetch(`http://localhost:5000/api/events/${id}`,{method:"DELETE"}); fetchEvents(); };
 
@@ -627,6 +653,10 @@ function DeptDashboard() {
           </div>
           <div className="topbar-right" style={{ display:"flex", alignItems:"center", gap:12 }}>
             <div style={{ padding:"6px 14px", borderRadius:999, background:"rgba(99,102,241,0.12)", border:"1px solid rgba(99,102,241,0.28)", fontSize:13, color:"#A5B4FC", fontFamily:"'Outfit',sans-serif", fontWeight:600 }}>{dept}</div>
+            <div style={{ padding:"6px 14px", borderRadius:999, background:"rgba(236,72,153,0.1)", border:"1px solid rgba(236,72,153,0.24)", fontSize:13, color:"#F9A8D4", fontFamily:"'Outfit',sans-serif", fontWeight:600 }}>
+              {/* Display coordinator dynamically */}
+              Coordinator: {deptCoordinator || "Not assigned"}
+            </div>
             {view==="my" && (
               <button className="btn-primary" onClick={openCreate} style={{ padding:"9px 20px", fontSize:13 }}>
                 <Icon name="plus" size={15} color="white" />New Event

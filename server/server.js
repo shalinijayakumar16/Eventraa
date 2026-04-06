@@ -25,6 +25,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/events", require("./routes/eventRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/registrations", registrationRoutes);
+app.use("/api/departments", require("./routes/departmentRoutes"));
 
 // 🔥 CRON JOB — mark expired events
 // TEST MODE (runs every 1 minute)
