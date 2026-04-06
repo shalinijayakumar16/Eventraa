@@ -26,6 +26,7 @@ app.use("/api/events", require("./routes/eventRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/registrations", registrationRoutes);
 app.use("/api/departments", require("./routes/departmentRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
 
 // 🔥 CRON JOB — mark expired events
 // TEST MODE (runs every 1 minute)

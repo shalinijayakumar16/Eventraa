@@ -215,6 +215,42 @@ export const STYLES = `
     box-shadow: 0 4px 16px rgba(99,102,241,0.35);
   }
 
+  .view-tabs {
+    display: flex;
+    gap: 6px;
+    width: fit-content;
+    padding: 5px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+  }
+  .view-tab {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: #64748B;
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+    white-space: nowrap;
+  }
+  .view-tab.inactive:hover {
+    background: rgba(255,255,255,0.06);
+    color: #94A3B8;
+  }
+  .view-tab.active {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(99,102,241,0.4);
+  }
+
   /* ── Event card ── */
   .event-card {
     background: rgba(255,255,255,0.035);

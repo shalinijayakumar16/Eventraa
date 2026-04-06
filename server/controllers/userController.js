@@ -43,6 +43,10 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: "User not found" });
     }
 
+    if (user.isActive === false) {
+      return res.status(403).json({ message: "Your account is blocked. Contact admin." });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -55,6 +59,49 @@ exports.loginUser = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// Fetch all users for admin view
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password").sort({ createdAt: -1 });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching users" });
+  }
+};
+
+// Toggle active status (block/unblock)
+exports.toggleUserStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.isActive = !user.isActive;
+    await user.save();
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating user status" });
+  }
+};
+
+// Remove user permanently from database
+exports.deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting user" });
   }
 };
 
