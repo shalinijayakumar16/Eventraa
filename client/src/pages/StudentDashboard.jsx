@@ -10,7 +10,7 @@ import ProfileDropdown   from "../components/ProfileDropdown";
 import Sidebar           from "../components/Sidebar";
 import StatsRow          from "../components/StatsRow";
 import TabBar            from "../components/TabBar";
-import FiltersRow        from "../components/FiltersRow";
+import SearchFilterBar   from "../components/SearchFilterBar";
 import EventsGrid        from "../components/EventsGrid";
 import WishlistPage      from "../components/WishlistPage";
 import RecommendedEvents from "../components/RecommendedEvents";
@@ -40,15 +40,19 @@ function StudentDashboard() {
 
   // Tabs + filters + search
   const [activeTab, setActiveTab]   = useState("all");
-  const [search, setSearch]         = useState("");
-  const [department, setDepartment] = useState("");
-  const [type, setType]             = useState("");
-  const [dateFilter, setDateFilter] = useState("");
+
+  // Store search input value
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Store selected filter values
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
 
   const userId = localStorage.getItem("userId");
   const wishlistStorageKey = `eventra_wishlist_${userId || "guest"}`;
 
-  useEffect(() => { fetchEvents(); }, [department, type]);
+  useEffect(() => { fetchEvents(); }, []);
   useEffect(() => { fetchMyEvents(); fetchUser(); fetchWishlistIds(); fetchNotificationSummary(); }, []);
 
   useEffect(() => {
@@ -63,8 +67,6 @@ function StudentDashboard() {
   const fetchEvents = async () => {
     try {
       let url = `http://localhost:5000/api/events?`;
-      if (department) url += `department=${department}&`;
-      if (type)       url += `type=${type}&`;
       if (userId)     url += `userId=${userId}`;
       const res  = await fetch(url);
       const data = await res.json();
@@ -252,6 +254,11 @@ function StudentDashboard() {
 
   const registeredIds = useMemo(() => new Set(myEvents.map(e => e.eventId?._id || e.eventId)), [myEvents]);
 
+  const departmentOptions = useMemo(() => {
+    return [...new Set(events.map((event) => event.department).filter(Boolean))].sort();
+  }, [events]);
+
+  // Filter events based on user input
   const filteredEvents = events.filter(event => {
     const eventDate = new Date(event.date);
     const isPast    = eventDate < now;
@@ -260,17 +267,26 @@ function StudentDashboard() {
     if (activeTab === "upcoming"   && isPast)                         return false;
     if (activeTab === "completed"  && !isPast)                        return false;
 
-    if (search && !event.title?.toLowerCase().includes(search.toLowerCase())) return false;
+    const matchesSearch = event.title?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (dateFilter) {
-      const filterDate = new Date(dateFilter);
-      filterDate.setHours(0, 0, 0, 0);
-      const eventDay = new Date(eventDate);
-      eventDay.setHours(0, 0, 0, 0);
-      if (eventDay < filterDate) return false;
-    }
+    const matchesDepartment = selectedDepartment
+      ? event.department === selectedDepartment
+      : true;
 
-    return true;
+    const normalizedType = String(event.type || "").toLowerCase();
+    const matchesType = selectedType
+      ? (selectedType === "Tech"
+          ? (normalizedType === "tech" || normalizedType === "technical")
+          : normalizedType === selectedType.toLowerCase())
+      : true;
+
+    const eventDateKey = event.date ? new Date(event.date).toISOString().slice(0, 10) : "";
+    const matchesDate = selectedDate
+      ? eventDateKey === selectedDate
+      : true;
+
+    // Return only matching events
+    return matchesSearch && matchesDepartment && matchesType && matchesDate;
   });
 
   /* ── Stats ─────────────────────────────────────────────────────────────── */
@@ -294,10 +310,10 @@ function StudentDashboard() {
   };
 
   const handleClearFilters = () => {
-    setSearch("");
-    setDepartment("");
-    setType("");
-    setDateFilter("");
+    setSearchTerm("");
+    setSelectedDepartment("");
+    setSelectedType("");
+    setSelectedDate("");
   };
 
   /* ── Render ────────────────────────────────────────────────────────────── */
@@ -377,17 +393,18 @@ function StudentDashboard() {
             />
 
             {activeTab !== "wishlist" && (
-              <FiltersRow
-                search={search}
-                department={department}
-                type={type}
-                dateFilter={dateFilter}
+              <SearchFilterBar
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                selectedDepartment={selectedDepartment}
+                setSelectedDepartment={setSelectedDepartment}
+                selectedType={selectedType}
+                setSelectedType={setSelectedType}
+                selectedDate={selectedDate}
+                setSelectedDate={setSelectedDate}
+                departmentOptions={departmentOptions}
                 filteredCount={filteredEvents.length}
-                onSearchChange={setSearch}
-                onDepartmentChange={setDepartment}
-                onTypeChange={setType}
-                onDateChange={setDateFilter}
-                onClear={handleClearFilters}
+                onClearFilters={handleClearFilters}
               />
             )}
 
