@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useToast } from "../hooks/useToast";
 
 // Styles & constants
 import { STYLES } from "../constants/styles";
@@ -19,6 +20,7 @@ import RegistrationModal from "../components/RegistrationModal";
 import NotificationPanel from "../components/NotificationPanel";
 
 function StudentDashboard() {
+  const { showToast } = useToast();
   const [events, setEvents]           = useState([]);
   const [myEvents, setMyEvents]       = useState([]);
   const [user, setUser]               = useState(null);
@@ -210,7 +212,7 @@ function StudentDashboard() {
   const handleSubmitForm = async () => {
     for (let field of selectedEvent.formFields || []) {
       if (field.required && !formValues[field.label]) {
-        alert(`${field.label} is required`);
+        showToast(`${field.label} is required`, "warning");
         return;
       }
     }
@@ -224,7 +226,7 @@ function StudentDashboard() {
           answers: Object.entries(formValues).map(([q, a]) => ({ question: q, answer: a })),
         }),
       });
-      alert("Registered successfully 🎉");
+      showToast("Registered successfully 🎉", "success");
       setMyEvents(prev => [...prev, { eventId: selectedEvent._id }]);
 
       // Add a local success notification for immediate UX feedback

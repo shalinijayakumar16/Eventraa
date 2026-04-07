@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useToast } from "../hooks/useToast";
 
 const REGISTER_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap');
@@ -203,6 +204,7 @@ const getStrength = (pwd) => {
 
  function Register() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
 
 
@@ -264,14 +266,14 @@ const getStrength = (pwd) => {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Registered successfully 🎉");
+        showToast("Registered successfully 🎉", "success");
         navigate("/login");
       } else {
-        alert(data.message);
+        showToast(data.message, "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Server error");
+      showToast("Server error", "error");
     }
   };
 

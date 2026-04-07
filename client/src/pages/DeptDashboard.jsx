@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../hooks/useToast";
 import CreateEvent from "../components/CreateEvent";
 
 const API_BASE = "http://localhost:5000";
@@ -359,6 +360,7 @@ function AttProgressBar({ present, total }) {
 /* ─── Main Component ─────────────────────────────────────────────────────── */
 function DeptDashboard() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents]         = useState([]);
@@ -390,16 +392,8 @@ function DeptDashboard() {
   const [attSaving, setAttSaving]           = useState(false);
   const [attDownloading, setAttDownloading] = useState(false);
   const [attSearch, setAttSearch]           = useState("");
-  const [toast, setToast]                   = useState(null);  // {msg, icon}
-
   const dept = localStorage.getItem("deptId");
   const [deptCoordinator, setDeptCoordinator] = useState("");
-
-  /* ── Toast helper ──────────────────────────────────────────────────────── */
-  const showToast = (msg, icon = "check") => {
-    setToast({ msg, icon });
-    setTimeout(() => setToast(null), 3000);
-  };
 
   /* ── Form field helpers ─────────────────────────────────────────────────── */
   const addFormField    = () => setFormFields(p => [...p, { label:"", type:"text", required:false }]);
@@ -477,7 +471,7 @@ function DeptDashboard() {
       const wb   = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb,ws,"Registrations");
       XLSX.writeFile(wb,`${regsEventTitle.replace(/\s+/g,"_")}_registrations.xlsx`);
-    } catch(err) { alert("Export failed. Please try again."); }
+    } catch(err) { showToast("Export failed. Please try again.", "error"); }
     finally { setExportLoading(false); }
   };
 
@@ -542,12 +536,12 @@ function DeptDashboard() {
         body: JSON.stringify({ attendance: payload }),
       });
       if (res.ok) {
-        showToast("Attendance saved successfully!");
+        showToast("Attendance saved successfully!", "success");
       } else {
-        showToast("Failed to save attendance. Try again.", "x");
+        showToast("Failed to save attendance. Try again.", "error");
       }
     } catch {
-      showToast("Failed to save attendance. Try again.", "x");
+      showToast("Failed to save attendance. Try again.", "error");
     } finally {
       setAttSaving(false);
     }
@@ -575,7 +569,7 @@ function DeptDashboard() {
       XLSX.utils.book_append_sheet(wb, ws, "Attendance");
       XLSX.writeFile(wb, `${attEventTitle.replace(/\s+/g, "_")}_attendance.xlsx`);
     } catch {
-      alert("Download failed. Please try again.");
+      showToast("Download failed. Please try again.", "error");
     } finally {
       setAttDownloading(false);
     }
@@ -596,7 +590,7 @@ function DeptDashboard() {
   /* ── Submit (create / edit) ─────────────────────────────────────────────── */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.applyBy && form.date && new Date(form.applyBy) > new Date(form.date)) { alert("Apply By date cannot be after Event Date"); return; }
+    if (form.applyBy && form.date && new Date(form.applyBy) > new Date(form.date)) { showToast("Apply By date cannot be after Event Date", "warning"); return; }
     setSaveLoading(true);
     try {
       const fd = new FormData();
@@ -1150,14 +1144,6 @@ function DeptDashboard() {
               )}
 
             </div>
-          </div>
-        )}
-
-        {/* ── Success Toast ── */}
-        {toast && (
-          <div className="success-toast">
-            <Icon name={toast.icon} size={16} color="white" />
-            {toast.msg}
           </div>
         )}
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../hooks/useToast";
 
 /* ─── Styles (matching Landing page aesthetic) ─────────────────────────────── */
 const STYLES = `
@@ -379,7 +380,7 @@ if (res.ok) {
   // ✅ store correct deptId
   localStorage.setItem("deptId", deptId);
 
-  alert("Login successful ✅");
+  showToast("Login successful ✅", "success");
 
   // ✅ navigate ONLY on success
   navigate("/dept-dashboard");

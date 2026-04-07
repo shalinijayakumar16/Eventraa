@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useToast } from "../hooks/useToast";
 
 const LOGIN_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap');
@@ -197,6 +198,7 @@ const LoginBlobBg = () => (
   // ✅ ADD HANDLE LOGIN HERE (INSIDE Login function)
  function Login() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -221,7 +223,7 @@ const LoginBlobBg = () => (
       const data = await res.json();
 
       if (res.ok) {
-        alert("Login successful 🚀");
+        showToast("Login successful! 🚀", "success");
 
       // ✅ ADD THESE LINES
       localStorage.setItem("userId", data.user._id);
@@ -232,10 +234,10 @@ const LoginBlobBg = () => (
 
         navigate("/student");
       } else {
-        alert(data.message);
+        showToast(data.message, "error");
       }
     } catch (error) {
-      alert("Server error");
+      showToast("Server error", "error");
     }
   };
 

@@ -11,34 +11,39 @@ import Profile from "./pages/Profile";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoute from "./components/AdminRoute";
+import { ToastProvider } from "./context/ToastContext";
+import ToastContainer from "./components/ToastContainer";
 
 
 
 function App() {
   return (
-    <div className="app-container">
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Signup />} />
-        <Route path="/dept-login" element={<DeptLogin />} />
-        <Route path="/dept-dashboard" element={<DeptDashboard />} />
+    <ToastProvider>
+      <div className="app-container">
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Signup />} />
+          <Route path="/dept-login" element={<DeptLogin />} />
+          <Route path="/dept-dashboard" element={<DeptDashboard />} />
 
-        <Route path="/student" element={<StudentDashboard />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
-        <Route
-          path="/admin-dashboard"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
-        
+          <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route
+            path="/admin-dashboard"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          
 
-      </Routes>
-    </div>
+        </Routes>
+        <ToastContainer />
+      </div>
+    </ToastProvider>
   );
 }
 
