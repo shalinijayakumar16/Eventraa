@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../hooks/useToast";
+
+const API_BASE = "http://localhost:5000";
 
 /* ─── Styles (matching Landing page aesthetic) ─────────────────────────────── */
 const STYLES = `
@@ -346,6 +348,7 @@ const BlobBg = () => (
 /* ─── Main Component ───────────────────────────────────────────────────────── */
 function DeptLogin() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [deptId, setDeptId] = useState("");
   const [password, setPassword] = useState("");
@@ -366,30 +369,42 @@ function DeptLogin() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/users/dept-login", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ deptId, password })
-});
+      const payload = { deptId: deptId.trim().toUpperCase(), password };
+      const loginUrl = `${API_BASE}/api/department/login`;
 
-const data = await res.json();
+      console.log("[DeptLogin] Sending login request", {
+        url: loginUrl,
+        deptId: payload.deptId,
+      });
 
-if (res.ok) {
-  // ✅ store correct deptId
-  localStorage.setItem("deptId", deptId);
+      const res = await fetch(loginUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-  showToast("Login successful ✅", "success");
+      const data = await res.json().catch(() => ({}));
 
-  // ✅ navigate ONLY on success
-  navigate("/dept-dashboard");
-} else {
-  setError(data.message || "Invalid credentials. Please try again.");
-  triggerShake();
-}
-    } catch {
-      setError("Unable to reach server. Please try again.");
+      if (res.ok) {
+        localStorage.setItem("deptId", payload.deptId);
+        showToast("Login successful ✅", "success");
+        navigate("/dept-dashboard");
+      } else {
+        const backendMessage = data.message || "Invalid credentials. Please try again.";
+        console.warn("[DeptLogin] Backend login error", {
+          status: res.status,
+          message: backendMessage,
+        });
+        setError(backendMessage);
+        triggerShake();
+      }
+    } catch (error) {
+      console.error("[DeptLogin] Network/server error", error);
+      const networkMessage = "Unable to reach server. Check backend at http://localhost:5000 and try again.";
+      showToast(networkMessage, "error");
+      setError(networkMessage);
       triggerShake();
     } finally {
       setLoading(false);
