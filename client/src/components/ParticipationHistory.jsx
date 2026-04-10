@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
+const API_BASE = "http://localhost:5000";
+
 function ParticipationHistory({ userId }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -127,6 +129,13 @@ function ParticipationHistory({ userId }) {
             const event = item.eventId || {};
             const eventDate = event.date ? new Date(event.date).toLocaleDateString() : "Date not available";
             const certificateUrl = item.certificateUrl || event.certificateUrl;
+            const certificateHref = certificateUrl
+              ? certificateUrl.startsWith("http")
+                ? certificateUrl
+                : `${API_BASE}${certificateUrl}`
+              : "";
+
+            console.log("Certificate URL:", certificateHref);
 
             return (
               <article
@@ -163,7 +172,7 @@ function ParticipationHistory({ userId }) {
                     </span>
                     {certificateUrl ? (
                       <a
-                        href={certificateUrl}
+                        href={certificateHref}
                         target="_blank"
                         rel="noreferrer"
                         style={{

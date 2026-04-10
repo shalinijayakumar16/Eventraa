@@ -19,6 +19,8 @@ app.use(express.json());
 
 // Static folder (for images)
 app.use("/uploads", express.static("uploads"));
+// Serve certificate files so they can be accessed via URL
+app.use("/certificates", express.static("certificates"));
 
 // Routes
 app.use("/api/events", require("./routes/eventRoutes"));
@@ -27,6 +29,7 @@ app.use("/api/registrations", registrationRoutes);
 app.use("/api/departments", require("./routes/departmentRoutes"));
 app.use("/api/department", require("./routes/departmentRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/certificates", require("./routes/certificateRoutes"));
 
 const normalizeLegacyEventStatuses = async () => {
   try {

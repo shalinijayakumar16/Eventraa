@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { useToast } from "../hooks/useToast";
 import CreateEvent from "../components/CreateEvent";
 
@@ -99,6 +100,15 @@ const STYLES = `
   }
   .btn-attendance:hover { background:rgba(16,185,129,0.16); border-color:rgba(16,185,129,0.45); transform:translateY(-1px); box-shadow:0 4px 14px rgba(16,185,129,0.2); }
   .btn-attendance:active { transform:translateY(0); }
+
+  .btn-certificate {
+    background: rgba(6,182,212,0.09); color:#67E8F9; border:1px solid rgba(6,182,212,0.25);
+    padding:8px 14px; border-radius:9px; font-family:'Outfit',sans-serif; font-size:13px;
+    font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+    transition:background 0.2s,border-color 0.2s,transform 0.2s,box-shadow 0.2s; white-space:nowrap;
+  }
+  .btn-certificate:hover { background:rgba(6,182,212,0.16); border-color:rgba(6,182,212,0.45); transform:translateY(-1px); box-shadow:0 4px 14px rgba(6,182,212,0.2); }
+  .btn-certificate:disabled { opacity:0.65; cursor:not-allowed; transform:none; }
 
   .btn-logout {
     background:rgba(239,68,68,0.08); color:#FCA5A5; border:1px solid rgba(239,68,68,0.2);
@@ -330,6 +340,7 @@ const Icon = ({ name, size = 18, color = "currentColor" }) => {
     download:   (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>),
     search:     (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>),
     attendance: (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>),
+    award:      (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>),
     percent:    (<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>),
   };
   return icons[name] || null;
@@ -392,6 +403,7 @@ function DeptDashboard() {
   const [attSaving, setAttSaving]           = useState(false);
   const [attDownloading, setAttDownloading] = useState(false);
   const [attSearch, setAttSearch]           = useState("");
+  const [certificateLoadingMap, setCertificateLoadingMap] = useState({});
   const dept = localStorage.getItem("deptId");
   const [deptCoordinator, setDeptCoordinator] = useState("");
 
@@ -453,6 +465,32 @@ function DeptDashboard() {
     catch { setRegistrations([]); } finally { setRegsLoading(false); }
   };
   const closeRegs = () => { setShowRegs(false); setRegistrations([]); setRegsEventTitle(""); };
+
+  const generateCertificates = async (eventId) => {
+    if (!eventId || certificateLoadingMap[eventId]) return;
+
+    setCertificateLoadingMap((prev) => ({ ...prev, [eventId]: true }));
+
+    try {
+      console.log("Generating certificates for:", eventId);
+
+      // Trigger certificate creation for attendees
+      await axios.post(`${API_BASE}/api/certificates/generate/${eventId}`);
+
+      alert("Certificates generated successfully");
+      showToast("Certificates generated successfully", "success");
+    } catch (error) {
+      console.error(error);
+      alert("Error generating certificates");
+      showToast(error?.response?.data?.message || error.message || "Error generating certificates", "error");
+    } finally {
+      setCertificateLoadingMap((prev) => {
+        const next = { ...prev };
+        delete next[eventId];
+        return next;
+      });
+    }
+  };
 
   /* ── Export Registrations Excel (unchanged) ─────────────────────────────── */
   const exportRegistrations = async () => {
@@ -764,6 +802,25 @@ function DeptDashboard() {
                           {/* Row 3: Attendance ← NEW */}
                           <button className="btn-attendance" onClick={()=>openAttendance(ev._id,ev.title)} style={{ flex:"0 0 100%", justifyContent:"center" }}>
                             <Icon name="attendance" size={14} color="#6EE7B7" />Attendance
+                          </button>
+
+                          <button
+                            className="btn-certificate"
+                            onClick={() => generateCertificates(ev._id)}
+                            disabled={Boolean(certificateLoadingMap[ev._id])}
+                            style={{ flex:"0 0 100%", justifyContent:"center" }}
+                          >
+                            {/* Trigger certificate generation for selected event */}
+                            {certificateLoadingMap[ev._id] ? (
+                              <>
+                                <div style={{ width:13, height:13, border:"2px solid rgba(103,232,249,0.3)", borderTopColor:"#67E8F9", borderRadius:"50%", animation:"spin 0.7s linear infinite" }} />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Icon name="award" size={14} color="#67E8F9" />Generate Certificates
+                              </>
+                            )}
                           </button>
                         </div>
                       )}

@@ -16,6 +16,11 @@ const registrationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Store generated certificate link
+    certificateUrl: {
+      type: String,
+      default: "",
+    },
 
     // 🔥 Snapshot of student details (auto-filled from User)
     name: {
