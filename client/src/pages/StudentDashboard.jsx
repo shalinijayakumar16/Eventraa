@@ -18,6 +18,7 @@ import RecommendedEvents from "../components/RecommendedEvents";
 import EventDetailsModal from "../components/EventDetailsModal";
 import RegistrationModal from "../components/RegistrationModal";
 import NotificationPanel from "../components/NotificationPanel";
+import ParticipationHistory from "../components/ParticipationHistory";
 
 function StudentDashboard() {
   const { showToast } = useToast();
@@ -388,6 +389,21 @@ function StudentDashboard() {
               upcomingCount={upcomingCount}
               departmentCount={departmentCount}
             />
+
+            <div className="animate-fadeUp" style={{ marginTop: 8 }}>
+              <h2
+                style={{
+                  margin: "0 0 8px",
+                  color: "#E2E8F0",
+                  fontFamily: "'Outfit', sans-serif",
+                  letterSpacing: "-0.01em",
+                  fontSize: 20,
+                }}
+              >
+                📊 Participation History
+              </h2>
+              <ParticipationHistory userId={userId} />
+            </div>
 
             <RecommendedEvents
               userId={userId}

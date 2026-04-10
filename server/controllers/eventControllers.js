@@ -1,6 +1,7 @@
 const Event = require("../models/Event");
 const Registration = require("../models/Registration");
 const User = require("../models/User");
+const { syncAttendanceToRegistrations } = require("./registrationController");
 
 // ✅ GET RECOMMENDED EVENTS (LEVEL 1 SCORING)
 exports.getRecommendedEvents = async (req, res) => {
@@ -253,6 +254,8 @@ exports.updateAttendance = async (req, res) => {
     }));
 
     await event.save();
+
+    await syncAttendanceToRegistrations(event._id, event.attendance);
 
     res.status(200).json({
       message: "Attendance saved successfully",

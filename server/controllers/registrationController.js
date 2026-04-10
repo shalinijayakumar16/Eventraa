@@ -96,6 +96,44 @@ exports.getMyEvents = async (req, res) => {
   }
 };
 
+exports.getParticipationHistory = async (req, res) => {
+  try {
+    // Fetch only attended events for participation history
+    const data = await Registration.find({
+      userId: req.params.userId,
+      attended: true,
+    }).populate("eventId");
+
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching history" });
+  }
+};
+
+exports.syncAttendanceToRegistrations = async (eventId, attendance = []) => {
+  // Keep registration.attended aligned with event attendance records
+  if (!eventId || !Array.isArray(attendance)) return;
+
+  const bulkOps = attendance
+    .filter((entry) => entry?.studentId)
+    .map((entry) => ({
+      updateOne: {
+        filter: {
+          eventId,
+          userId: entry.studentId,
+        },
+        update: {
+          $set: {
+            attended: Boolean(entry.attended),
+          },
+        },
+      },
+    }));
+
+  if (!bulkOps.length) return;
+  await Registration.bulkWrite(bulkOps);
+};
+
 // ✅ Export full registration data
 exports.exportRegistrations = async (req, res) => {
   try {

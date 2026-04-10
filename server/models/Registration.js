@@ -12,6 +12,10 @@ const registrationSchema = new mongoose.Schema(
       ref: "Event",
       required: true
     },
+    attended: {
+      type: Boolean,
+      default: false,
+    },
 
     // 🔥 Snapshot of student details (auto-filled from User)
     name: {
