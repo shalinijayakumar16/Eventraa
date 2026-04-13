@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-
-const API_BASE = "http://localhost:5000";
+import { apiUrl } from "../constants/api";
 
 const stepMeta = [
   { key: "registered", label: "Registered" },
@@ -49,7 +48,7 @@ function EventJourneyTracker({ eventId, userId }) {
       setError("");
 
       try {
-        const response = await axios.get(`${API_BASE}/api/student/event-journey/${eventId}/${userId}`);
+        const response = await axios.get(apiUrl(`/api/student/event-journey/${eventId}/${userId}`));
         const payload = response.data || {};
 
         setJourney({

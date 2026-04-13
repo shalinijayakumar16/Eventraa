@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import EventCard from "./EventCard";
 import Icon from "./icon";
+import { apiUrl } from "../constants/api";
 
 function WishlistPage({
   active,
@@ -29,7 +30,7 @@ function WishlistPage({
 
     try {
       // Fetch all saved events for the logged-in user
-      const response = await fetch("/api/wishlist", {
+      const response = await fetch(apiUrl("/api/wishlist"), {
         headers: userId ? { "x-user-id": userId } : {},
       });
 

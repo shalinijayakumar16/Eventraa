@@ -4,8 +4,7 @@ import axios from "axios";
 import { useToast } from "../hooks/useToast";
 import CreateEvent from "../components/CreateEvent";
 import EventraLogo from "../components/EventraLogo";
-
-const API_BASE = "http://localhost:5000";
+import { apiUrl, assetUrl } from "../constants/api";
 
 /* ─── Styles ────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -423,7 +422,7 @@ function DeptDashboard() {
 
   const fetchEvents = async () => {
     try {
-      const url = view === "my" ? `http://localhost:5000/api/events/dept/${dept}` : `http://localhost:5000/api/events`;
+      const url = view === "my" ? apiUrl(`/api/events/dept/${dept}`) : apiUrl("/api/events");
       const res  = await fetch(url);
       const data = await res.json();
       setUpcomingEvents(Array.isArray(data.active)  ? data.active  : []);
@@ -438,7 +437,7 @@ function DeptDashboard() {
     const fetchDepartmentCoordinator = async () => {
       try {
         // Fetch department data from backend
-        const response = await fetch(`${API_BASE}/api/departments`);
+        const response = await fetch(apiUrl("/api/departments"));
         const departments = await response.json();
 
         // Match logged-in department
@@ -457,12 +456,12 @@ function DeptDashboard() {
     }
   }, [dept]);
 
-  const deleteEvent = async (id) => { await fetch(`http://localhost:5000/api/events/${id}`,{method:"DELETE"}); fetchEvents(); };
+  const deleteEvent = async (id) => { await fetch(apiUrl(`/api/events/${id}`),{method:"DELETE"}); fetchEvents(); };
 
   /* ── Registrations ─────────────────────────────────────────────────────── */
   const viewRegistrations = async (eventId, eventTitle) => {
     setRegsLoading(true); setRegsEventTitle(eventTitle||"Event"); setShowRegs(true);
-    try { const res=await fetch(`http://localhost:5000/api/registrations/event-registrations/${eventId}`); setRegistrations(await res.json()); }
+    try { const res=await fetch(apiUrl(`/api/registrations/event-registrations/${eventId}`)); setRegistrations(await res.json()); }
     catch { setRegistrations([]); } finally { setRegsLoading(false); }
   };
   const closeRegs = () => { setShowRegs(false); setRegistrations([]); setRegsEventTitle(""); };
@@ -476,7 +475,7 @@ function DeptDashboard() {
       console.log("Generating certificates for:", eventId);
 
       // Trigger certificate creation for attendees
-      await axios.post(`${API_BASE}/api/certificates/generate/${eventId}`);
+      await axios.post(apiUrl(`/api/certificates/generate/${eventId}`));
 
       alert("Certificates generated successfully");
       showToast("Certificates generated successfully", "success");
@@ -526,7 +525,7 @@ function DeptDashboard() {
     setAttLoading(true);
     setShowAtt(true);
     try {
-      const res  = await fetch(`http://localhost:5000/api/events/${eventId}/attendance`);
+      const res  = await fetch(apiUrl(`/api/events/${eventId}/attendance`));
       const data = await res.json();
       // Expected: [{studentId, name, registerNo, department, year, attended}]
       setAttStudents(Array.isArray(data) ? data : []);
@@ -569,7 +568,7 @@ function DeptDashboard() {
   year: s.year,               // ✅ ADD
   attended: s.attended
 }));
-      const res = await fetch(`http://localhost:5000/api/events/${attEventId}/attendance`, {
+      const res = await fetch(apiUrl(`/api/events/${attEventId}/attendance`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ attendance: payload }),
@@ -639,9 +638,9 @@ function DeptDashboard() {
       if (file) fd.append("poster", file);
       fd.append("formFields", JSON.stringify(formFields));
       if (editingEvent) {
-        await fetch(`http://localhost:5000/api/events/${editingEvent._id}`, { method:"PUT", body:fd });
+        await fetch(apiUrl(`/api/events/${editingEvent._id}`), { method:"PUT", body:fd });
       } else {
-        await fetch("http://localhost:5000/api/events", { method:"POST", body:fd });
+        await fetch(apiUrl("/api/events"), { method:"POST", body:fd });
       }
       setShowForm(false); setEditingEvent(null);
       setForm({ title:"", description:"", date:"", venue:"", applyBy:"" });
@@ -755,7 +754,7 @@ function DeptDashboard() {
                     {/* Poster */}
                     {ev.poster ? (
                       <div style={{ position:"relative", overflow:"hidden", height:180 }}>
-                        <img src={`http://localhost:5000/${ev.poster}`} alt="poster" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+                        <img src={assetUrl(ev.poster)} alt="poster" style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
                         <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top,rgba(7,9,26,0.7),transparent)" }} />
                         {isPast && <div style={{ position:"absolute", top:12, right:12, padding:"3px 10px", borderRadius:999, background:"rgba(0,0,0,0.5)", backdropFilter:"blur(8px)", fontSize:11, color:"#94A3B8", fontFamily:"'Outfit',sans-serif", fontWeight:600, border:"1px solid rgba(255,255,255,0.1)" }}>Past</div>}
                       </div>

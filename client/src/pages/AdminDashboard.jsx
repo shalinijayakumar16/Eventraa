@@ -6,8 +6,7 @@ import { STYLES } from "../constants/styles";
 import AdminAnalytics from "../components/AdminAnalytics";
 import EventApproval from "../components/EventApproval";
 import EventraLogo from "../components/EventraLogo";
-
-const API_BASE = "http://localhost:5000";
+import { apiUrl } from "../constants/api";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -28,7 +27,7 @@ function AdminDashboard() {
   const fetchDepartments = async () => {
     setDepartmentsLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/departments`);
+      const response = await fetch(apiUrl("/api/departments"));
 
       if (!response.ok) {
         throw new Error("Failed to fetch departments");
@@ -58,7 +57,7 @@ function AdminDashboard() {
   const fetchUsers = async () => {
     setUsersLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/api/users/all`);
+      const response = await fetch(apiUrl("/api/users/all"));
 
       if (!response.ok) {
         throw new Error("Failed to fetch users");
@@ -87,7 +86,7 @@ function AdminDashboard() {
 
     try {
       // Store coordinator in MongoDB
-      const response = await fetch(`${API_BASE}/api/departments/coordinator`, {
+      const response = await fetch(apiUrl("/api/departments/coordinator"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, coordinator: "" }),
@@ -110,7 +109,7 @@ function AdminDashboard() {
   // Remove department
   const handleRemoveDepartment = async (departmentName) => {
     try {
-      const response = await fetch(`${API_BASE}/api/departments/${encodeURIComponent(departmentName)}`, {
+      const response = await fetch(apiUrl(`/api/departments/${encodeURIComponent(departmentName)}`), {
         method: "DELETE",
       });
 
@@ -138,7 +137,7 @@ function AdminDashboard() {
 
     try {
       // Save coordinator in MongoDB
-      const response = await fetch(`${API_BASE}/api/departments/coordinator`, {
+      const response = await fetch(apiUrl("/api/departments/coordinator"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: departmentName, coordinator: coordinatorValue }),
@@ -173,7 +172,7 @@ function AdminDashboard() {
   // Toggle user access status
   const handleToggleUserStatus = async (userId) => {
     try {
-      const response = await fetch(`${API_BASE}/api/users/toggle-status/${userId}`, {
+      const response = await fetch(apiUrl(`/api/users/toggle-status/${userId}`), {
         method: "PUT",
       });
 
@@ -196,7 +195,7 @@ function AdminDashboard() {
     if (!shouldDelete) return;
 
     try {
-      const response = await fetch(`${API_BASE}/api/users/delete/${userId}`, {
+      const response = await fetch(apiUrl(`/api/users/delete/${userId}`), {
         method: "DELETE",
       });
 

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "../hooks/useToast";
+import { apiUrl } from "../constants/api";
 
 const LOGIN_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap');
@@ -212,7 +213,7 @@ const LoginBlobBg = () => (
   // ✅ MOVE HANDLE LOGIN HERE
   const handleLogin = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/users/login", {
+      const res = await fetch(apiUrl("/api/users/login"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -220,7 +221,7 @@ const LoginBlobBg = () => (
         body: JSON.stringify({ registerNo, password }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
         showToast("Login successful! 🚀", "success");
@@ -234,10 +235,10 @@ const LoginBlobBg = () => (
 
         navigate("/student");
       } else {
-        showToast(data.message, "error");
+        showToast(data.message || "Login failed", "error");
       }
     } catch (error) {
-      showToast("Server error", "error");
+      showToast("Unable to connect to server", "error");
     }
   };
 

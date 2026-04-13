@@ -3,8 +3,7 @@ import axios from "axios";
 import Icon from "./icon";
 import DepartmentActivityChart from "./admin/DepartmentActivityChart";
 import TopEventsChart from "./admin/TopEventsChart";
-
-const API_BASE = "http://localhost:5000";
+import { apiUrl } from "../constants/api";
 
 function AdminAnalytics() {
   const [analytics, setAnalytics] = useState(null);
@@ -26,7 +25,7 @@ function AdminAnalytics() {
     const fetchAnalytics = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${API_BASE}/api/admin/analytics`, {
+        const response = await axios.get(apiUrl("/api/admin/analytics"), {
           params: { range },
         });
 

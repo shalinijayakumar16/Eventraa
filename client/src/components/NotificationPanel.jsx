@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Icon from "./icon";
+import { apiUrl } from "../constants/api";
 
 const makeDummyNotifications = () => {
   const now = Date.now();
@@ -61,7 +62,7 @@ function NotificationPanel({ open, userId, onClose, onNotificationsUpdate }) {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/notifications", {
+      const response = await fetch(apiUrl("/api/notifications"), {
         headers: userId ? { "x-user-id": userId } : {},
       });
 
@@ -95,7 +96,7 @@ function NotificationPanel({ open, userId, onClose, onNotificationsUpdate }) {
 
     // Mark notifications as read after opening
     try {
-      await fetch("/api/notifications/read", {
+      await fetch(apiUrl("/api/notifications/read"), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

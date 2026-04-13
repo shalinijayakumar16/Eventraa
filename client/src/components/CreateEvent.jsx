@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import EventForm from "./EventForm";
+import { apiUrl } from "../constants/api";
 
 const CREATE_EVENT_STYLES = `
   .create-event-overlay {
@@ -196,7 +197,7 @@ function CreateEvent({ open, onClose, onCreated, department }) {
       payload.append("deadline", form.deadline);
       if (form.poster) payload.append("poster", form.poster);
 
-      const response = await fetch("/api/events/create", {
+      const response = await fetch(apiUrl("/api/events/create"), {
         method: "POST",
         body: payload,
       });

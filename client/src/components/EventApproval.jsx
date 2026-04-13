@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Icon from "./icon";
-
-const API_BASE = "http://localhost:5000";
+import { apiUrl } from "../constants/api";
 
 function EventApproval() {
   const [pendingEvents, setPendingEvents] = useState([]);
@@ -12,7 +11,7 @@ function EventApproval() {
     setLoading(true);
     try {
       // Load events awaiting admin approval
-      const response = await fetch(`${API_BASE}/api/events/pending`);
+      const response = await fetch(apiUrl("/api/events/pending"));
       if (!response.ok) {
         throw new Error("Failed to load pending events");
       }
@@ -35,7 +34,7 @@ function EventApproval() {
 
     setActionLoadingMap((previous) => ({ ...previous, [eventId]: true }));
     try {
-      const response = await fetch(`${API_BASE}/api/events/approve/${eventId}`, {
+      const response = await fetch(apiUrl(`/api/events/approve/${eventId}`), {
         method: "PUT",
       });
 
@@ -64,7 +63,7 @@ function EventApproval() {
 
     setActionLoadingMap((previous) => ({ ...previous, [eventId]: true }));
     try {
-      const response = await fetch(`${API_BASE}/api/events/reject/${eventId}`, {
+      const response = await fetch(apiUrl(`/api/events/reject/${eventId}`), {
         method: "DELETE",
       });
 

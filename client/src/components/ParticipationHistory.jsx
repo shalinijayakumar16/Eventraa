@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-
-const API_BASE = "http://localhost:5000";
+import { apiUrl } from "../constants/api";
 
 function ParticipationHistory({ userId }) {
   const [history, setHistory] = useState([]);
@@ -133,7 +132,7 @@ function ParticipationHistory({ userId }) {
 
             const handleDownloadCertificate = async () => {
               try {
-                const response = await axios.get(`${API_BASE}/api/certificates/download/${event._id}/${userId}`, {
+                const response = await axios.get(apiUrl(`/api/certificates/download/${event._id}/${userId}`), {
                   responseType: "blob",
                 });
 
@@ -146,7 +145,7 @@ function ParticipationHistory({ userId }) {
                 link.remove();
                 window.URL.revokeObjectURL(blobUrl);
               } catch (downloadError) {
-                const message = downloadError?.response?.data?.message || "Certificate is not ready yet.";
+                const message = downloadError?.response?.data?.message || "Unable to download certificate right now.";
                 window.alert(message);
               }
             };

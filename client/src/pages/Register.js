@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "../hooks/useToast";
 import EventraLogo from "../components/EventraLogo";
+import { apiUrl } from "../constants/api";
 
 const REGISTER_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap');
@@ -249,7 +250,7 @@ const getStrength = (pwd) => {
   // ✅ REGISTER FUNCTION
   const handleRegister = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/users/register", {
+      const res = await fetch(apiUrl("/api/users/register"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -264,17 +265,17 @@ const getStrength = (pwd) => {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       if (res.ok) {
         showToast("Registered successfully 🎉", "success");
         navigate("/login");
       } else {
-        showToast(data.message, "error");
+        showToast(data.message || "Registration failed", "error");
       }
     } catch (error) {
       console.error(error);
-      showToast("Server error", "error");
+      showToast("Unable to connect to server", "error");
     }
   };
 

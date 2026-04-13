@@ -4,6 +4,7 @@ import Icon from "./icon";
 import CountdownChip from "./CountdownChip";
 import EventJourneyTracker from "./EventJourneyTracker";
 import { TYPE_STYLE } from "../constants/config";
+import { assetUrl } from "../constants/api";
 
 function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToCalendar, clashConflictingEvents = [], userId }) {
   const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
@@ -45,7 +46,7 @@ function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToC
         {event.poster ? (
           <div style={{ position: "relative", height: 220, overflow: "hidden", borderRadius: "24px 24px 0 0" }}>
             <img
-              src={`http://localhost:5000/${event.poster}`}
+              src={assetUrl(event.poster)}
               alt="poster"
               style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             />

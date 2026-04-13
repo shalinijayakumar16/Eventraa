@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Icon from "./icon";
 import CountdownChip from "./CountdownChip";
 import { TYPE_STYLE } from "../constants/config";
+import { assetUrl } from "../constants/api";
 
 function EventCard({
   event,
@@ -38,7 +39,7 @@ function EventCard({
       {event.poster ? (
         <div style={{ position: "relative", height: 160, overflow: "hidden" }}>
           <img
-            src={`http://localhost:5000/${event.poster}`}
+            src={assetUrl(event.poster)}
             alt="poster"
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />

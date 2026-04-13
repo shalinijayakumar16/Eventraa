@@ -21,6 +21,7 @@ import NotificationPanel from "../components/NotificationPanel";
 import ParticipationHistory from "../components/ParticipationHistory";
 import ChatbotWidget from "../components/ChatbotWidget";
 import { openGoogleCalendar } from "../utils/googleCalendar";
+import { apiUrl } from "../constants/api";
 
 function StudentDashboard() {
   const { showToast } = useToast();
@@ -80,9 +81,10 @@ function StudentDashboard() {
   const fetchEvents = async () => {
     try {
       // Fetch only approved events for student dashboard
-      let url = `http://localhost:5000/api/events?`;
+      let url = `${apiUrl("/api/events")}?`;
       if (userId)     url += `userId=${userId}`;
       const res  = await fetch(url);
+      if (!res.ok) throw new Error("Unable to fetch events");
       const data = await res.json();
 
       // Approval system acts as a filter layer
@@ -103,7 +105,8 @@ function StudentDashboard() {
 
   const fetchMyEvents = async () => {
     try {
-      const res  = await fetch(`http://localhost:5000/api/registrations/my-events/${userId}`);
+      const res  = await fetch(apiUrl(`/api/registrations/my-events/${userId}`));
+      if (!res.ok) throw new Error("Unable to fetch registrations");
       const data = await res.json();
       setMyEvents(Array.isArray(data) ? data : []);
     } catch (err) { console.log(err); setMyEvents([]); }
@@ -111,7 +114,8 @@ function StudentDashboard() {
 
   const fetchUser = async () => {
     try {
-      const res  = await fetch(`/api/users/user/${userId}`);
+      const res  = await fetch(apiUrl(`/api/users/user/${userId}`));
+      if (!res.ok) throw new Error("Unable to fetch user");
       const data = await res.json();
       setUser(data);
     } catch (err) { console.log(err); }
@@ -132,7 +136,7 @@ function StudentDashboard() {
 
   const fetchWishlistIds = useCallback(async () => {
     try {
-      const response = await fetch("/api/wishlist", {
+      const response = await fetch(apiUrl("/api/wishlist"), {
         headers: userId ? { "x-user-id": userId } : {},
       });
 
@@ -153,7 +157,7 @@ function StudentDashboard() {
 
   const fetchNotificationSummary = useCallback(async () => {
     try {
-      const response = await fetch("/api/notifications", {
+      const response = await fetch(apiUrl("/api/notifications"), {
         headers: userId ? { "x-user-id": userId } : {},
       });
 
@@ -192,7 +196,7 @@ function StudentDashboard() {
     });
 
     try {
-      const response = await fetch(`/api/wishlist/${eventId}`, {
+      const response = await fetch(apiUrl(`/api/wishlist/${eventId}`), {
         method: willSave ? "POST" : "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -231,7 +235,7 @@ function StudentDashboard() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/events/check-clash", {
+      const response = await fetch(apiUrl("/api/events/check-clash"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, eventId }),
@@ -268,7 +272,7 @@ function StudentDashboard() {
       }
     }
     try {
-      await fetch("http://localhost:5000/api/registrations/register", {
+      const response = await fetch(apiUrl("/api/registrations/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -277,6 +281,9 @@ function StudentDashboard() {
           answers: Object.entries(formValues).map(([q, a]) => ({ question: q, answer: a })),
         }),
       });
+      if (!response.ok) {
+        throw new Error("Registration failed");
+      }
       showToast("Registered successfully 🎉", "success");
       setMyEvents(prev => [...prev, { eventId: selectedEvent._id }]);
 

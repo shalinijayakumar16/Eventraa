@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../hooks/useToast";
 import EventraLogo from "../components/EventraLogo";
-
-const API_BASE = "http://localhost:5000";
+import { apiUrl } from "../constants/api";
 
 /* ─── Styles (matching Landing page aesthetic) ─────────────────────────────── */
 const STYLES = `
@@ -371,7 +370,7 @@ function DeptLogin() {
     setLoading(true);
     try {
       const payload = { deptId: deptId.trim().toUpperCase(), password };
-      const loginUrl = `${API_BASE}/api/department/login`;
+      const loginUrl = apiUrl("/api/department/login");
 
       console.log("[DeptLogin] Sending login request", {
         url: loginUrl,
@@ -403,7 +402,7 @@ function DeptLogin() {
       }
     } catch (error) {
       console.error("[DeptLogin] Network/server error", error);
-      const networkMessage = "Unable to reach server. Check backend at http://localhost:5000 and try again.";
+      const networkMessage = "Unable to reach server. Please try again in a moment.";
       showToast(networkMessage, "error");
       setError(networkMessage);
       triggerShake();
