@@ -9,6 +9,7 @@ function RecommendedEvents({
   onToggleWishlist,
   onDetails,
   onRegister,
+  onAddToCalendar,
 }) {
   const [recommendedEvents, setRecommendedEvents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -81,6 +82,7 @@ function RecommendedEvents({
               alreadyRegistered={registeredIds.has(event._id)}
               onDetails={onDetails}
               onRegister={onRegister}
+              onAddToCalendar={onAddToCalendar}
               isSaved={wishlistIds.includes(event._id)}
               wishlistLoading={Boolean(wishlistLoadingMap[event._id])}
               onToggleWishlist={onToggleWishlist}

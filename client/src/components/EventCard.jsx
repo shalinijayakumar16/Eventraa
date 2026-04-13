@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import Icon from "./icon";
 import CountdownChip from "./CountdownChip";
 import { TYPE_STYLE } from "../constants/config";
@@ -7,10 +8,22 @@ function EventCard({
   alreadyRegistered,
   onDetails,
   onRegister,
+  onAddToCalendar,
   isSaved,
   wishlistLoading,
   onToggleWishlist,
 }) {
+  const [calendarAdded, setCalendarAdded] = useState(false);
+  const calendarTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (calendarTimerRef.current) {
+        clearTimeout(calendarTimerRef.current);
+      }
+    };
+  }, []);
+
   // Hide unapproved events
   if (event.approvalStatus && event.approvalStatus !== "approved") return null;
 
@@ -123,7 +136,37 @@ function EventCard({
         )}
 
         {/* Buttons */}
-        <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: 8 }}>
+        <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", display: "grid", gap: 8 }}>
+          <button
+            className="btn-ghost"
+            style={{
+              justifyContent: "center",
+              fontSize: 12,
+              padding: "9px 10px",
+              border: calendarAdded ? "1px solid rgba(74,222,128,0.45)" : "1px solid rgba(45,212,191,0.35)",
+              background: calendarAdded
+                ? "linear-gradient(135deg, rgba(74,222,128,0.2), rgba(16,185,129,0.14))"
+                : "linear-gradient(135deg, rgba(45,212,191,0.16), rgba(59,130,246,0.12))",
+              color: calendarAdded ? "#86EFAC" : "#99F6E4",
+            }}
+            onClick={() => {
+              onAddToCalendar?.(event);
+              setCalendarAdded(true);
+
+              if (calendarTimerRef.current) {
+                clearTimeout(calendarTimerRef.current);
+              }
+
+              calendarTimerRef.current = setTimeout(() => {
+                setCalendarAdded(false);
+                calendarTimerRef.current = null;
+              }, 2000);
+            }}
+            title="Add this event to Google Calendar"
+          >
+            <Icon name={calendarAdded ? "check" : "calendar"} size={13} color={calendarAdded ? "#86EFAC" : "#5EEAD4"} />
+            {calendarAdded ? "Added to Calendar" : "📅 Add to Calendar"}
+          </button>
           <button
             className="btn-ghost"
             style={{ flex: 1, justifyContent: "center", fontSize: 12, padding: "9px 10px" }}

@@ -20,6 +20,7 @@ import RegistrationModal from "../components/RegistrationModal";
 import NotificationPanel from "../components/NotificationPanel";
 import ParticipationHistory from "../components/ParticipationHistory";
 import ChatbotWidget from "../components/ChatbotWidget";
+import { openGoogleCalendar } from "../utils/googleCalendar";
 
 function StudentDashboard() {
   const { showToast } = useToast();
@@ -324,6 +325,23 @@ function StudentDashboard() {
     setSelectedDate("");
   };
 
+  const handleAddToCalendar = useCallback((event) => {
+    if (!event?.title || !event?.date) {
+      showToast("Event date is missing. Cannot add to calendar.", "warning");
+      return;
+    }
+
+    openGoogleCalendar({
+      title: event.title,
+      description: event.description,
+      location: event.venue,
+      startTime: event.date,
+      endTime: event.endDate,
+    });
+
+    showToast("Event added to Google Calendar 🚀", "success");
+  }, [showToast]);
+
   /* ── Render ────────────────────────────────────────────────────────────── */
   return (
     <>
@@ -414,6 +432,7 @@ function StudentDashboard() {
               onToggleWishlist={handleToggleWishlist}
               onDetails={setDetailsEvent}
               onRegister={handleOpenRegister}
+              onAddToCalendar={handleAddToCalendar}
             />
 
             <TabBar
@@ -448,6 +467,7 @@ function StudentDashboard() {
                 registeredIds={registeredIds}
                 onDetails={setDetailsEvent}
                 onRegister={handleOpenRegister}
+                onAddToCalendar={handleAddToCalendar}
                 onToggleWishlist={handleToggleWishlist}
               />
             ) : (
@@ -457,6 +477,7 @@ function StudentDashboard() {
                 activeTab={activeTab}
                 onDetails={setDetailsEvent}
                 onRegister={handleOpenRegister}
+                onAddToCalendar={handleAddToCalendar}
                 wishlistIds={wishlistIds}
                 wishlistLoadingMap={wishlistLoadingMap}
                 onToggleWishlist={handleToggleWishlist}
@@ -471,6 +492,7 @@ function StudentDashboard() {
             event={detailsEvent}
             alreadyJoined={registeredIds.has(detailsEvent._id)}
             userId={userId}
+            onAddToCalendar={handleAddToCalendar}
             onClose={() => setDetailsEvent(null)}
             onRegister={() => {
               setSelectedEvent(detailsEvent);

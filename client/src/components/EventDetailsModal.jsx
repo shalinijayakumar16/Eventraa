@@ -1,13 +1,23 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import Icon from "./icon";
 import CountdownChip from "./CountdownChip";
 import { TYPE_STYLE } from "../constants/config";
 
-function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, userId }) {
+function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToCalendar, userId }) {
   const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
   const isPast    = new Date(event.date) < new Date();
   const [showQR, setShowQR] = useState(false);
+  const [calendarAdded, setCalendarAdded] = useState(false);
+  const calendarTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (calendarTimerRef.current) {
+        clearTimeout(calendarTimerRef.current);
+      }
+    };
+  }, []);
 
   const qrData = useMemo(() => {
     // Generate QR using userId and eventId
@@ -97,6 +107,34 @@ function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, userId }
           {/* Actions */}
           <div style={{ display: "flex", gap: 10 }}>
             <button className="btn-ghost" onClick={onClose} style={{ padding: "11px 20px" }}>Close</button>
+            <button
+              className="btn-ghost"
+              style={{
+                padding: "11px 16px",
+                border: calendarAdded ? "1px solid rgba(74,222,128,0.45)" : "1px solid rgba(45,212,191,0.35)",
+                background: calendarAdded
+                  ? "linear-gradient(135deg, rgba(74,222,128,0.2), rgba(16,185,129,0.14))"
+                  : "linear-gradient(135deg, rgba(45,212,191,0.16), rgba(59,130,246,0.12))",
+                color: calendarAdded ? "#86EFAC" : "#99F6E4",
+              }}
+              onClick={() => {
+                onAddToCalendar?.(event);
+                setCalendarAdded(true);
+
+                if (calendarTimerRef.current) {
+                  clearTimeout(calendarTimerRef.current);
+                }
+
+                calendarTimerRef.current = setTimeout(() => {
+                  setCalendarAdded(false);
+                  calendarTimerRef.current = null;
+                }, 2000);
+              }}
+              title="Add this event to Google Calendar"
+            >
+              <Icon name={calendarAdded ? "check" : "calendar"} size={13} color={calendarAdded ? "#86EFAC" : "#5EEAD4"} />
+              {calendarAdded ? "Added to Calendar" : "📅 Add to Calendar"}
+            </button>
             <button
               className="btn-primary-glow"
               style={{ flex: 1, justifyContent: "center", padding: "11px", animation: alreadyJoined ? "none" : "glowPulse 3s ease infinite" }}

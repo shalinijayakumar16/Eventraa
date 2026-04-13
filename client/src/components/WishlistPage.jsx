@@ -11,6 +11,7 @@ function WishlistPage({
   registeredIds,
   onDetails,
   onRegister,
+  onAddToCalendar,
   onToggleWishlist,
 }) {
   const [savedEvents, setSavedEvents] = useState([]);
@@ -105,6 +106,7 @@ function WishlistPage({
               alreadyRegistered={registeredIds.has(event._id)}
               onDetails={onDetails}
               onRegister={onRegister}
+              onAddToCalendar={onAddToCalendar}
               isSaved={wishlistIds.includes(event._id)}
               wishlistLoading={Boolean(wishlistLoadingMap[event._id])}
               onToggleWishlist={onToggleWishlist}
