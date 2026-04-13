@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 
 const API_BASE = "http://localhost:5000";
 
@@ -129,13 +130,26 @@ function ParticipationHistory({ userId }) {
             const event = item.eventId || {};
             const eventDate = event.date ? new Date(event.date).toLocaleDateString() : "Date not available";
             const certificateUrl = item.certificateUrl || event.certificateUrl;
-            const certificateHref = certificateUrl
-              ? certificateUrl.startsWith("http")
-                ? certificateUrl
-                : `${API_BASE}${certificateUrl}`
-              : "";
 
-            console.log("Certificate URL:", certificateHref);
+            const handleDownloadCertificate = async () => {
+              try {
+                const response = await axios.get(`${API_BASE}/api/certificates/download/${event._id}/${userId}`, {
+                  responseType: "blob",
+                });
+
+                const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+                const link = document.createElement("a");
+                link.href = blobUrl;
+                link.setAttribute("download", `${(event.title || "certificate").replace(/\s+/g, "_")}.pdf`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(blobUrl);
+              } catch (downloadError) {
+                const message = downloadError?.response?.data?.message || "Certificate is not ready yet.";
+                window.alert(message);
+              }
+            };
 
             return (
               <article
@@ -170,43 +184,21 @@ function ParticipationHistory({ userId }) {
                     >
                       {certificateUrl ? "Certificate Ready" : "Certificate Pending"}
                     </span>
-                    {certificateUrl ? (
-                      <a
-                        href={certificateHref}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          borderRadius: 10,
-                          border: "1px solid rgba(255,255,255,0.1)",
-                          background: "rgba(255,255,255,0.04)",
-                          color: "#E2E8F0",
-                          padding: "8px 12px",
-                          fontSize: 12,
-                          textDecoration: "none",
-                        }}
-                      >
-                        Download Certificate
-                      </a>
-                    ) : (
-                      <button
-                        type="button"
-                        style={{
-                          borderRadius: 10,
-                          border: "1px solid rgba(255,255,255,0.1)",
-                          background: "rgba(255,255,255,0.03)",
-                          color: "#94A3B8",
-                          padding: "8px 12px",
-                          fontSize: 12,
-                          cursor: "pointer",
-                        }}
-                        onClick={() => {
-                          // Placeholder for certificate feature
-                          window.alert("Certificate download will be available soon.");
-                        }}
-                      >
-                        Download Certificate
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      style={{
+                        borderRadius: 10,
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        background: certificateUrl ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.03)",
+                        color: certificateUrl ? "#E2E8F0" : "#94A3B8",
+                        padding: "8px 12px",
+                        fontSize: 12,
+                        cursor: "pointer",
+                      }}
+                      onClick={handleDownloadCertificate}
+                    >
+                      Download Certificate
+                    </button>
                   </div>
                 </div>
               </article>

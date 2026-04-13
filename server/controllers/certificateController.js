@@ -81,3 +81,63 @@ exports.generateCertificates = async (req, res) => {
     return res.status(500).json({ message: "Error generating certificates" });
   }
 };
+
+exports.downloadCertificate = async (req, res) => {
+  try {
+    const { eventId, userId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(eventId) || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid eventId or userId" });
+    }
+
+    fs.mkdirSync(CERTIFICATE_DIR, { recursive: true });
+
+    const registration = await Registration.findOne({ eventId, userId }).populate("userId eventId");
+    if (!registration) {
+      return res.status(404).json({ message: "Registration not found" });
+    }
+
+    if (!registration.attended) {
+      return res.status(403).json({ message: "Attendance not marked yet" });
+    }
+
+    const eventObjectId = new mongoose.Types.ObjectId(eventId);
+    const fileName = `certificate-${userId}.pdf`;
+    const filePath = path.join(CERTIFICATE_DIR, fileName);
+
+    if (!fs.existsSync(filePath)) {
+      ensureCertificateFile(filePath);
+    }
+
+    const certificateUrl = `/certificates/${fileName}`;
+
+    await Certificate.updateOne(
+      { userId, eventId: eventObjectId },
+      {
+        $set: {
+          certificateUrl,
+          generatedAt: new Date(),
+        },
+      },
+      { upsert: true }
+    );
+
+    await Registration.updateOne(
+      { userId, eventId: eventObjectId },
+      {
+        $set: {
+          certificateUrl,
+        },
+      }
+    );
+
+    return res.download(filePath, fileName, (error) => {
+      if (error && !res.headersSent) {
+        return res.status(500).json({ message: "Unable to download certificate" });
+      }
+    });
+  } catch (error) {
+    console.error("Certificate download error:", error);
+    return res.status(500).json({ message: "Error downloading certificate" });
+  }
+};
