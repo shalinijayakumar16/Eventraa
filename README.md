@@ -92,6 +92,11 @@ Advanced AI recommendations
 Email notifications
 Event analytics dashboard
 
+
+## 🌐 Live Demo
+
+🚀 https://eventra-puce.vercel.app
+
 👨‍💻 Contributors
 Your Shalini Jayakumar
 📌 Note
