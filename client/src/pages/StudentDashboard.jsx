@@ -19,6 +19,7 @@ import EventDetailsModal from "../components/EventDetailsModal";
 import RegistrationModal from "../components/RegistrationModal";
 import NotificationPanel from "../components/NotificationPanel";
 import ParticipationHistory from "../components/ParticipationHistory";
+import ChatbotWidget from "../components/ChatbotWidget";
 
 function StudentDashboard() {
   const { showToast } = useToast();
@@ -489,6 +490,8 @@ function StudentDashboard() {
             onClose={() => setSelectedEvent(null)}
           />
         )}
+
+        <ChatbotWidget userId={userId} />
       </div>
     </>
   );

@@ -30,6 +30,7 @@ app.use("/api/departments", require("./routes/departmentRoutes"));
 app.use("/api/department", require("./routes/departmentRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/certificates", require("./routes/certificateRoutes"));
+app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 
 const normalizeLegacyEventStatuses = async () => {
   try {

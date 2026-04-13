@@ -22,6 +22,14 @@ const userSchema = new mongoose.Schema({
   department: {
     type: String
   },
+  interests: {
+    type: [String],
+    default: []
+  },
+  interest: {
+    type: String,
+    default: ""
+  },
   year: {
     type: String
   },

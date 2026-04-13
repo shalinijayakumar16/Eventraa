@@ -1,6 +1,7 @@
 const Registration = require("../models/Registration");
 const User = require("../models/User");
 const Event = require("../models/Event"); // ✅ ADD THIS
+const Attendance = require("../models/Attendance");
 const mongoose = require("mongoose");
 
 // ✅ Register for event
@@ -34,6 +35,16 @@ exports.registerEvent = async (req, res) => {
 
       answers
     });
+
+    await Attendance.updateOne(
+      { userId, eventId },
+      {
+        $set: {
+          status: "registered",
+        },
+      },
+      { upsert: true }
+    );
 
     // ==============================
     // 🔥 NEW: ADD TO ATTENDANCE
@@ -132,6 +143,26 @@ exports.syncAttendanceToRegistrations = async (eventId, attendance = []) => {
 
   if (!bulkOps.length) return;
   await Registration.bulkWrite(bulkOps);
+
+  const attendanceBulkOps = attendance
+    .filter((entry) => entry?.studentId)
+    .map((entry) => ({
+      updateOne: {
+        filter: {
+          eventId,
+          userId: entry.studentId,
+        },
+        update: {
+          $set: {
+            status: entry.attended ? "present" : "absent",
+          },
+        },
+        upsert: true,
+      },
+    }));
+
+  if (!attendanceBulkOps.length) return;
+  await Attendance.bulkWrite(attendanceBulkOps);
 };
 
 // ✅ Export full registration data
