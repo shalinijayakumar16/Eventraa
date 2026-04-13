@@ -6,6 +6,7 @@ const upload = require("../middleware/upload");
 // CREATE EVENT
 router.post("/create", upload.single("poster"), controller.createEvent);
 router.post("/", upload.single("poster"), controller.createEvent);
+router.post("/check-clash", controller.checkEventClash);
 
 // GET ALL EVENTS
 router.get("/", controller.getAllEvents);

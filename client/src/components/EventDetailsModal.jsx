@@ -4,7 +4,7 @@ import Icon from "./icon";
 import CountdownChip from "./CountdownChip";
 import { TYPE_STYLE } from "../constants/config";
 
-function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToCalendar, userId }) {
+function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToCalendar, clashConflictingEvents = [], userId }) {
   const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
   const isPast    = new Date(event.date) < new Date();
   const [showQR, setShowQR] = useState(false);
@@ -85,6 +85,29 @@ function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToC
             <p style={{ fontSize: 14, color: "#94A3B8", lineHeight: 1.7, marginBottom: 20 }}>{event.description}</p>
           ) : (
             <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, marginBottom: 20, fontStyle: "italic" }}>No description provided.</p>
+          )}
+
+          {clashConflictingEvents.length > 0 && (
+            <div
+              style={{
+                marginBottom: 18,
+                borderRadius: 12,
+                padding: "12px 14px",
+                border: "1px solid rgba(251,191,36,0.35)",
+                background: "rgba(251,191,36,0.08)",
+              }}
+            >
+              <div style={{ color: "#FDE68A", fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+                ⚠️ You have another event at this time
+              </div>
+              <div style={{ display: "grid", gap: 6 }}>
+                {clashConflictingEvents.map((title, index) => (
+                  <div key={`${title}-${index}`} style={{ color: "#FCD34D", fontSize: 13 }}>
+                    • {title}
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 16 }} />

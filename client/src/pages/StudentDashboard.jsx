@@ -42,6 +42,12 @@ function StudentDashboard() {
   const [detailsEvent, setDetailsEvent]   = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [formValues, setFormValues]       = useState({});
+  const [detailsConflictingEvents, setDetailsConflictingEvents] = useState([]);
+  const [clashDialog, setClashDialog] = useState({
+    open: false,
+    event: null,
+    conflictingEvents: [],
+  });
 
   // Tabs + filters + search
   const [activeTab, setActiveTab]   = useState("all");
@@ -211,6 +217,40 @@ function StudentDashboard() {
     setShowProfile(false);
   }, []);
 
+  const checkEventClash = useCallback(async (eventId) => {
+    if (!eventId || !userId) {
+      return { clash: false, conflictingEvents: [] };
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/events/check-clash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, eventId }),
+      });
+
+      if (!response.ok) {
+        return { clash: false, conflictingEvents: [] };
+      }
+
+      const payload = await response.json();
+
+      return {
+        clash: Boolean(payload?.clash),
+        conflictingEvents: Array.isArray(payload?.conflictingEvents)
+          ? payload.conflictingEvents
+          : [],
+      };
+    } catch (error) {
+      return { clash: false, conflictingEvents: [] };
+    }
+  }, [userId]);
+
+  const openRegistrationForm = useCallback((event) => {
+    setSelectedEvent(event);
+    setFormValues({});
+  }, []);
+
   /* ── Registration submit ───────────────────────────────────────────────── */
   const handleSubmitForm = async () => {
     for (let field of selectedEvent.formFields || []) {
@@ -313,9 +353,44 @@ function StudentDashboard() {
   };
 
   /* ── Handlers passed down ──────────────────────────────────────────────── */
-  const handleOpenRegister = (event) => {
-    setSelectedEvent(event);
-    setFormValues({});
+  const handleOpenRegister = useCallback(async (event) => {
+    if (!event?._id) return;
+
+    const clashResult = await checkEventClash(event._id);
+
+    if (clashResult.clash) {
+      setClashDialog({
+        open: true,
+        event,
+        conflictingEvents: clashResult.conflictingEvents,
+      });
+      return;
+    }
+
+    openRegistrationForm(event);
+  }, [checkEventClash, openRegistrationForm]);
+
+  const handleOpenDetails = useCallback(async (event) => {
+    if (!event?._id) {
+      setDetailsConflictingEvents([]);
+      setDetailsEvent(event);
+      return;
+    }
+
+    const clashResult = await checkEventClash(event._id);
+    setDetailsConflictingEvents(clashResult.clash ? clashResult.conflictingEvents : []);
+    setDetailsEvent(event);
+  }, [checkEventClash]);
+
+  const closeClashDialog = () => {
+    setClashDialog({ open: false, event: null, conflictingEvents: [] });
+  };
+
+  const proceedWithClashRegistration = () => {
+    if (clashDialog.event) {
+      openRegistrationForm(clashDialog.event);
+    }
+    closeClashDialog();
   };
 
   const handleClearFilters = () => {
@@ -430,7 +505,7 @@ function StudentDashboard() {
               wishlistIds={wishlistIds}
               wishlistLoadingMap={wishlistLoadingMap}
               onToggleWishlist={handleToggleWishlist}
-              onDetails={setDetailsEvent}
+              onDetails={handleOpenDetails}
               onRegister={handleOpenRegister}
               onAddToCalendar={handleAddToCalendar}
             />
@@ -465,7 +540,7 @@ function StudentDashboard() {
                 wishlistIds={wishlistIds}
                 wishlistLoadingMap={wishlistLoadingMap}
                 registeredIds={registeredIds}
-                onDetails={setDetailsEvent}
+                onDetails={handleOpenDetails}
                 onRegister={handleOpenRegister}
                 onAddToCalendar={handleAddToCalendar}
                 onToggleWishlist={handleToggleWishlist}
@@ -475,7 +550,7 @@ function StudentDashboard() {
                 events={filteredEvents}
                 registeredIds={registeredIds}
                 activeTab={activeTab}
-                onDetails={setDetailsEvent}
+                onDetails={handleOpenDetails}
                 onRegister={handleOpenRegister}
                 onAddToCalendar={handleAddToCalendar}
                 wishlistIds={wishlistIds}
@@ -486,6 +561,48 @@ function StudentDashboard() {
           </main>
         </div>
 
+        {clashDialog.open && (
+          <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeClashDialog(); }}>
+            <div className="modal-box" style={{ maxWidth: 560 }}>
+              <div style={{ padding: "22px 26px 14px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                <div style={{ color: "#FCA5A5", fontSize: 15, fontWeight: 700, marginBottom: 6 }}>
+                  ⚠️ You have another event at this time
+                </div>
+                <div style={{ color: "#94A3B8", fontSize: 13 }}>
+                  You can still continue registration for {clashDialog.event?.title || "this event"}.
+                </div>
+              </div>
+
+              <div style={{ padding: "16px 26px", display: "flex", flexDirection: "column", gap: 8 }}>
+                {clashDialog.conflictingEvents.map((title, index) => (
+                  <div
+                    key={`${title}-${index}`}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 10,
+                      border: "1px solid rgba(251,191,36,0.35)",
+                      background: "rgba(251,191,36,0.08)",
+                      color: "#FDE68A",
+                      fontSize: 13,
+                    }}
+                  >
+                    • {title}
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ padding: "0 26px 22px", display: "flex", gap: 10 }}>
+                <button className="btn-ghost" onClick={closeClashDialog} style={{ padding: "10px 18px" }}>
+                  Cancel
+                </button>
+                <button className="btn-primary-glow" onClick={proceedWithClashRegistration} style={{ flex: 1, justifyContent: "center", padding: "10px 16px" }}>
+                  Proceed Anyway
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Details modal */}
         {detailsEvent && (
           <EventDetailsModal
@@ -493,11 +610,15 @@ function StudentDashboard() {
             alreadyJoined={registeredIds.has(detailsEvent._id)}
             userId={userId}
             onAddToCalendar={handleAddToCalendar}
-            onClose={() => setDetailsEvent(null)}
-            onRegister={() => {
-              setSelectedEvent(detailsEvent);
-              setFormValues({});
+            clashConflictingEvents={detailsConflictingEvents}
+            onClose={() => {
               setDetailsEvent(null);
+              setDetailsConflictingEvents([]);
+            }}
+            onRegister={() => {
+              handleOpenRegister(detailsEvent);
+              setDetailsEvent(null);
+              setDetailsConflictingEvents([]);
             }}
           />
         )}

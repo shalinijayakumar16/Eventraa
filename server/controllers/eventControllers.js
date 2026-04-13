@@ -2,6 +2,40 @@ const Event = require("../models/Event");
 const Registration = require("../models/Registration");
 const User = require("../models/User");
 const { syncAttendanceToRegistrations } = require("./registrationController");
+const { getConflictingEvents } = require("../utils/eventClash");
+
+exports.checkEventClash = async (req, res) => {
+  try {
+    const { userId, eventId } = req.body;
+
+    if (!userId || !eventId) {
+      return res.status(400).json({ message: "userId and eventId are required" });
+    }
+
+    const targetEvent = await Event.findById(eventId).select("_id title date startTime endTime");
+
+    if (!targetEvent) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const registrations = await Registration.find({ userId, eventId: { $ne: eventId } })
+      .select("eventId")
+      .populate("eventId", "_id title date startTime endTime");
+
+    const existingEvents = registrations
+      .map((registration) => registration.eventId)
+      .filter(Boolean);
+
+    const conflicts = getConflictingEvents(existingEvents, targetEvent);
+
+    return res.json({
+      clash: conflicts.length > 0,
+      conflictingEvents: conflicts.map((event) => event.title || "Untitled Event"),
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
 
 // ✅ GET RECOMMENDED EVENTS (LEVEL 1 SCORING)
 exports.getRecommendedEvents = async (req, res) => {
