@@ -16,6 +16,8 @@ const SUPPORTED_INTENTS = new Set([
 ]);
 
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
+const REGISTRATION_PATTERN = /(register|registered|registration|enrolled|sign\s*up|regis|regsit|rigister|registerd)/;
+const ATTENDANCE_PATTERN = /(attendance|attended|present|absent|participat|attendence)/;
 
 const extractJsonObject = (text) => {
   if (!text) return null;
@@ -47,7 +49,7 @@ const fallbackIntentDetection = (message) => {
   if (/thank\s*you|thanks|thx/.test(text)) return { intent: "gratitude" };
   if (/bye|goodbye|see\s+you|talk\s+later/.test(text)) return { intent: "goodbye" };
   if (/help|what\s+can\s+you\s+do|how\s+to\s+use/.test(text)) return { intent: "help" };
-  if (/attendance|attended|present|absent|participat/.test(text) && /today|this\s+day/.test(text)) {
+  if (ATTENDANCE_PATTERN.test(text) && /today|this\s+day/.test(text)) {
     return { intent: "show_attendance_today" };
   }
   if (/event|events/.test(text) && /(department|dept|\bit\b|\bcs\b|\bcse\b|ece|mech|civil|technical|non-technical|non technical|workshop|today|tomorrow|week|upcoming)/.test(text)) {
@@ -55,12 +57,12 @@ const fallbackIntentDetection = (message) => {
   }
   if (/today|this\s+day/.test(text)) return { intent: "list_events_today" };
   if (/all\s+events|available\s+events|show\s+events|list\s+events/.test(text)) return { intent: "list_all_events" };
-  if (/count|total|how\s+many|number\s+of/.test(text) && /register|registration|enrolled|sign\s*up|event/.test(text)) {
+  if (/count|total|how\s+many|number\s+of/.test(text) && (REGISTRATION_PATTERN.test(text) || /event/.test(text))) {
     return { intent: "registration_summary" };
   }
   if (/^the\s+count$|^count$/.test(text)) return { intent: "registration_summary" };
-  if (/register|registered|registration|enrolled|sign\s*up/.test(text)) return { intent: "check_registration" };
-  if (/attendance|attended|present|absent|participat/.test(text)) return { intent: "show_attendance" };
+  if (REGISTRATION_PATTERN.test(text)) return { intent: "check_registration" };
+  if (ATTENDANCE_PATTERN.test(text)) return { intent: "show_attendance" };
   if (/recommend|suggest|for\s+me|interested|best\s+events/.test(text)) return { intent: "recommend_events" };
 
   if (/eventra|event|department|interest|dashboard|profile/.test(text)) {

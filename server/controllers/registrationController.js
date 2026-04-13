@@ -109,11 +109,48 @@ exports.getMyEvents = async (req, res) => {
 
 exports.getParticipationHistory = async (req, res) => {
   try {
-    // Fetch only attended events for participation history
-    const data = await Registration.find({
-      userId: req.params.userId,
-      attended: true,
-    }).populate("eventId");
+    const userId = req.params.userId;
+
+    // Read from both sources so history still works even if one source is stale.
+    const [attendedRegistrations, presentAttendance] = await Promise.all([
+      Registration.find({
+        userId,
+        attended: true,
+      }).populate("eventId"),
+      Attendance.find({
+        userId,
+        status: "present",
+      }).populate("eventId"),
+    ]);
+
+    const byEventId = new Map();
+
+    attendedRegistrations.forEach((item) => {
+      const eventId = String(item?.eventId?._id || item?.eventId || "");
+      if (!eventId) return;
+      byEventId.set(eventId, item);
+    });
+
+    presentAttendance.forEach((item) => {
+      const eventId = String(item?.eventId?._id || item?.eventId || "");
+      if (!eventId || byEventId.has(eventId)) return;
+
+      // Normalize attendance-only entries to registration-like shape for UI compatibility.
+      byEventId.set(eventId, {
+        _id: `attendance-${item._id}`,
+        userId: item.userId,
+        eventId: item.eventId,
+        attended: true,
+        certificateUrl: "",
+        createdAt: item.createdAt,
+      });
+    });
+
+    const data = Array.from(byEventId.values()).sort((a, b) => {
+      const dateA = new Date(a?.eventId?.date || a?.createdAt || 0).getTime();
+      const dateB = new Date(b?.eventId?.date || b?.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
 
     res.json(data);
   } catch (error) {

@@ -300,10 +300,24 @@ const buildGeneralContext = async ({ userId, user, approvedEvents }) => {
     .filter(Boolean)
     .slice(0, 8);
 
+  const presentFromAttendance = attendanceRecords
+    .filter((item) => item.status === "present")
+    .map((item) => String(item?.eventId?._id || item?.eventId || ""))
+    .filter(Boolean);
+  const presentFromRegistrations = registrations
+    .filter((item) => item.attended)
+    .map((item) => String(item?.eventId?._id || item?.eventId || ""))
+    .filter(Boolean);
+  const presentEventIds = new Set([...presentFromAttendance, ...presentFromRegistrations]);
+  const absentCount = attendanceRecords.filter((item) => item.status === "absent").length;
+  const totalRegisteredEvents = registrations.length;
+  const pendingAttendance = Math.max(totalRegisteredEvents - presentEventIds.size - absentCount, 0);
+
   const attendanceSummary = {
-    present: attendanceRecords.filter((item) => item.status === "present").length,
-    absent: attendanceRecords.filter((item) => item.status === "absent").length,
-    registered: attendanceRecords.filter((item) => item.status === "registered").length,
+    present: presentEventIds.size,
+    absent: absentCount,
+    registered: totalRegisteredEvents,
+    pendingAttendance,
   };
 
   return {
@@ -315,7 +329,7 @@ const buildGeneralContext = async ({ userId, user, approvedEvents }) => {
       `Upcoming events: ${upcomingEvents.map((event) => `${event.title} (${formatDateTime(event.date)})`).join(" | ") || "None"}`,
       `Registered event count: ${registrations.length}`,
       `Registered events: ${registeredTitles.join(" | ") || "None"}`,
-      `Attendance: present=${attendanceSummary.present}, absent=${attendanceSummary.absent}, registered=${attendanceSummary.registered}`,
+      `Attendance: present=${attendanceSummary.present}, absent=${attendanceSummary.absent}, registeredEvents=${attendanceSummary.registered}, pending=${attendanceSummary.pendingAttendance}`,
     ].join("\n"),
     registrations,
     attendanceSummary,
@@ -405,7 +419,8 @@ const buildNonAiGeneralReply = ({
       `Attendance summary for ${user.name}:`,
       `• Present: ${attendanceSummary.present}`,
       `• Absent: ${attendanceSummary.absent}`,
-      `• Registered: ${attendanceSummary.registered}`,
+      `• Registered Events: ${attendanceSummary.registered}`,
+      `• Pending Attendance: ${attendanceSummary.pendingAttendance}`,
     ].join("\n");
   }
 
@@ -768,15 +783,31 @@ exports.chatbot = async (req, res) => {
         });
       }
 
-      const attendanceRecords = await Attendance.find({ userId }).populate("eventId", "title date department type");
+      const [attendanceRecords, attendedRegistrations] = await Promise.all([
+        Attendance.find({ userId }).populate("eventId", "title date department type"),
+        Registration.find({ userId, attended: true }).populate("eventId", "title date department type"),
+      ]);
 
-      if (!attendanceRecords.length) {
+      const presentEventIds = new Set(
+        attendanceRecords
+          .filter((item) => item.status === "present")
+          .map((item) => String(item?.eventId?._id || item?.eventId || ""))
+          .filter(Boolean)
+      );
+
+      attendedRegistrations.forEach((item) => {
+        const eventId = String(item?.eventId?._id || item?.eventId || "");
+        if (eventId) presentEventIds.add(eventId);
+      });
+
+      if (!attendanceRecords.length && !attendedRegistrations.length) {
         return res.json({ intent, reply: "No attendance records found." });
       }
 
-      const attendedCount = attendanceRecords.filter((item) => item.status === "present").length;
+      const attendedCount = presentEventIds.size;
       const absentCount = attendanceRecords.filter((item) => item.status === "absent").length;
-      const registeredCount = attendanceRecords.filter((item) => item.status === "registered").length;
+      const totalRegisteredEvents = await Registration.countDocuments({ userId });
+      const pendingAttendanceCount = Math.max(totalRegisteredEvents - attendedCount - absentCount, 0);
 
       return res.json({
         intent,
@@ -784,12 +815,14 @@ exports.chatbot = async (req, res) => {
           `Attendance summary for ${user.name}:`,
           `• Present: ${attendedCount}`,
           `• Absent: ${absentCount}`,
-          `• Registered: ${registeredCount}`,
+          `• Registered Events: ${totalRegisteredEvents}`,
+          `• Pending Attendance: ${pendingAttendanceCount}`,
         ].join("\n")),
         data: {
           attendedCount,
           absentCount,
-          registeredCount,
+          totalRegisteredEvents,
+          pendingAttendanceCount,
           records: attendanceRecords,
         },
       });
