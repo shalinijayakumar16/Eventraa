@@ -1,70 +1,99 @@
-# Getting Started with Create React App
+# 🎉 Eventra – AI-Powered Event Management System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 📌 Project Description
+Eventra is an AI-powered full stack event management platform designed to streamline the entire event lifecycle in educational institutions.
 
-## Available Scripts
+It enables departments to create and manage events, students to register and participate, and automates key processes like QR-based attendance and certificate generation. The system also integrates AI features such as a chatbot and event recommendation system to enhance user experience.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## 🚀 Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 🎯 Core Features
+- Event Creation & Management (Department Dashboard)
+- Student Registration for Events
+- QR Code-Based Attendance System
+- Automated Certificate Generation & Download
+- Event Status Tracking (Registered → Attended → Certificate Generated)
+- Expired Event Handling (Past Events)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 🤖 AI Features
+- AI Chatbot (Student Dashboard assistance)
+- Event Recommendation System based on user activity/interests
 
-### `npm test`
+### 🔐 Authentication
+- Role-based login:
+  - Admin
+  - Department
+  - Student
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 📊 Additional Features
+- Clean UI with responsive design
+- Real-time updates
+- Error handling & validations
+- Dashboard for all user roles
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🛠️ Tech Stack
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Frontend:
+- React.js
+- HTML, CSS, JavaScript
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Backend:
+- Node.js
+- Express.js
 
-### `npm run eject`
+### Database:
+- MongoDB
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### AI Integration:
+- Chatbot & Recommendation Logic
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## ⚙️ Setup Instructions
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/eventra.git
+cd eventra
+2. Install Dependencies
+Backend:
+cd backend
+npm install
+Frontend:
+cd frontend
+npm install
+3. Configure Environment Variables
 
-## Learn More
+Create a .env file in backend:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+PORT=5000
+MONGO_URI=your_mongodb_connection
+JWT_SECRET=your_secret_key
+4. Run the Project
+Start Backend:
+cd backend
+npm start
+Start Frontend:
+cd frontend
+npm start
+📸 Project Workflow
+Department creates event
+Student registers for event
+QR-based attendance is marked
+Attendance confirmed
+Certificate generated & downloaded
+Event moves to past events
+📦 Future Enhancements
+Advanced AI recommendations
+Email notifications
+Event analytics dashboard
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+👨‍💻 Contributors
+Your Shalini Jayakumar
+📌 Note
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is developed as part of an AI Full Stack academic submission
