@@ -2,11 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import Icon from "./icon";
 import CountdownChip from "./CountdownChip";
+import EventJourneyTracker from "./EventJourneyTracker";
 import { TYPE_STYLE } from "../constants/config";
 
 function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToCalendar, clashConflictingEvents = [], userId }) {
   const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
   const isPast    = new Date(event.date) < new Date();
+  const isCompleted = event.eventState === "completed";
+  const isEnded = isPast || isCompleted;
   const [showQR, setShowQR] = useState(false);
   const [calendarAdded, setCalendarAdded] = useState(false);
   const calendarTimerRef = useRef(null);
@@ -50,6 +53,9 @@ function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToC
             {isPast && (
               <div style={{ position: "absolute", top: 14, left: 14, padding: "4px 12px", borderRadius: 999, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)", fontSize: 11, color: "#94A3B8", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(255,255,255,0.1)" }}>Past Event</div>
             )}
+            {isCompleted && !isPast && (
+              <div style={{ position: "absolute", top: 14, left: 14, padding: "4px 12px", borderRadius: 999, background: "rgba(34,197,94,0.16)", backdropFilter: "blur(8px)", fontSize: 11, color: "#86EFAC", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(34,197,94,0.25)" }}>Completed 🎉</div>
+            )}
             <button onClick={onClose} style={{ position: "absolute", top: 14, right: 14, width: 34, height: 34, borderRadius: 9, background: "rgba(0,0,0,0.45)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
               <Icon name="x" size={16} color="#E2E8F0" />
             </button>
@@ -59,6 +65,9 @@ function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToC
             <Icon name="calendar" size={40} color="rgba(99,102,241,0.35)" />
             {isPast && (
               <div style={{ position: "absolute", top: 14, left: 14, padding: "4px 12px", borderRadius: 999, background: "rgba(0,0,0,0.3)", fontSize: 11, color: "#64748B", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(255,255,255,0.07)" }}>Past Event</div>
+            )}
+            {isCompleted && !isPast && (
+              <div style={{ position: "absolute", top: 14, left: 14, padding: "4px 12px", borderRadius: 999, background: "rgba(34,197,94,0.14)", fontSize: 11, color: "#86EFAC", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(34,197,94,0.22)" }}>Completed 🎉</div>
             )}
             <button onClick={onClose} style={{ position: "absolute", top: 14, right: 14, width: 34, height: 34, borderRadius: 9, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
               <Icon name="x" size={16} color="#94A3B8" />
@@ -74,7 +83,7 @@ function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToC
           </div>
 
           {/* Countdown */}
-          {!isPast && (
+          {!isEnded && (
             <div style={{ marginBottom: 14 }}>
               <CountdownChip event={event} />
             </div>
@@ -86,6 +95,8 @@ function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToC
           ) : (
             <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, marginBottom: 20, fontStyle: "italic" }}>No description provided.</p>
           )}
+
+          <EventJourneyTracker eventId={event._id} userId={userId} />
 
           {clashConflictingEvents.length > 0 && (
             <div
@@ -161,12 +172,14 @@ function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToC
             <button
               className="btn-primary-glow"
               style={{ flex: 1, justifyContent: "center", padding: "11px", animation: alreadyJoined ? "none" : "glowPulse 3s ease infinite" }}
-              disabled={alreadyJoined || isPast}
+              disabled={alreadyJoined || isEnded}
               onClick={() => { onClose(); onRegister(); }}
             >
               {alreadyJoined
                 ? <><Icon name="check" size={14} color="#4ade80" /> Registered</>
-                : isPast
+                : isCompleted
+                  ? <>Completed 🎉</>
+                  : isPast
                   ? <>Event Ended</>
                   : <>Register Now <Icon name="arrowRight" size={14} color="white" /></>
               }

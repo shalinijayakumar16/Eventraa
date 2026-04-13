@@ -29,6 +29,8 @@ function EventCard({
 
   const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
   const isPast    = new Date(event.date) < new Date();
+  const isCompleted = event.eventState === "completed";
+  const isUnavailable = isPast || isCompleted;
 
   return (
     <div className="event-card">
@@ -44,6 +46,9 @@ function EventCard({
           {isPast && (
             <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", fontSize: 11, color: "#94A3B8", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(255,255,255,0.1)" }}>Past</div>
           )}
+          {isCompleted && !isPast && (
+            <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(34,197,94,0.16)", backdropFilter: "blur(8px)", fontSize: 11, color: "#86EFAC", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(34,197,94,0.25)" }}>Completed 🎉</div>
+          )}
           {alreadyRegistered && (
             <div style={{ position: "absolute", top: 10, left: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(74,222,128,0.15)", backdropFilter: "blur(8px)", fontSize: 11, color: "#4ade80", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(74,222,128,0.3)", display: "flex", alignItems: "center", gap: 4 }}>
               <Icon name="check" size={10} color="#4ade80" /> Registered
@@ -55,6 +60,9 @@ function EventCard({
           <Icon name="calendar" size={32} color="rgba(99,102,241,0.3)" />
           {isPast && (
             <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(0,0,0,0.3)", fontSize: 11, color: "#64748B", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(255,255,255,0.07)" }}>Past</div>
+          )}
+          {isCompleted && !isPast && (
+            <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(34,197,94,0.14)", fontSize: 11, color: "#86EFAC", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(34,197,94,0.22)" }}>Completed 🎉</div>
           )}
           {alreadyRegistered && (
             <div style={{ position: "absolute", top: 10, left: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(74,222,128,0.12)", fontSize: 11, color: "#4ade80", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(74,222,128,0.25)", display: "flex", alignItems: "center", gap: 4 }}>
@@ -178,7 +186,7 @@ function EventCard({
           <button
             className="btn-primary-glow"
             style={{ flex: 1, justifyContent: "center", fontSize: 12, padding: "9px 10px" }}
-            disabled={isPast}
+            disabled={isUnavailable}
             onClick={() => {
               // Show QR only for registered users
               if (alreadyRegistered) {
@@ -191,6 +199,8 @@ function EventCard({
           >
             {alreadyRegistered ? (
               <><Icon name="check" size={13} color="#4ade80" /> View QR</>
+            ) : isCompleted ? (
+              <>Completed 🎉</>
             ) : isPast ? (
               <>Ended</>
             ) : (

@@ -1,8 +1,34 @@
 const Event = require("../models/Event");
 const Registration = require("../models/Registration");
+const Certificate = require("../models/Certificate");
 const User = require("../models/User");
 const { syncAttendanceToRegistrations } = require("./registrationController");
 const { getConflictingEvents } = require("../utils/eventClash");
+
+const DEFAULT_EVENT_DURATION_MS = 60 * 60 * 1000;
+
+const toValidDate = (value) => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const getEventEndTime = (event) => {
+  const end = toValidDate(event?.endTime) || toValidDate(event?.date);
+  if (end) return end;
+
+  const start = toValidDate(event?.startTime);
+  if (start) return new Date(start.getTime() + DEFAULT_EVENT_DURATION_MS);
+
+  return null;
+};
+
+const isEventActiveForUser = (event, certifiedEventIds, now = new Date()) => {
+  const endTime = getEventEndTime(event);
+  const isCompletedByTime = !endTime || endTime <= now;
+  const isCompletedByCertificate = certifiedEventIds.has(String(event._id));
+  return !isCompletedByTime && !isCompletedByCertificate;
+};
 
 exports.checkEventClash = async (req, res) => {
   try {
@@ -49,11 +75,18 @@ exports.getRecommendedEvents = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Hide unapproved events from students in recommendations
-    const events = await Event.find({ status: "approved" });
+    const [events, certificates] = await Promise.all([
+      Event.find({ status: "approved" }),
+      Certificate.find({ userId }).select("eventId"),
+    ]);
+
+    const certifiedEventIds = new Set(certificates.map((item) => String(item.eventId)));
+    const now = new Date();
 
     // Calculate recommendation score for each event
-    const scoredEvents = events.map((event) => {
+    const scoredEvents = events
+      .filter((event) => isEventActiveForUser(event, certifiedEventIds, now))
+      .map((event) => {
       let score = 0;
 
       if (event.department && user.department && event.department === user.department) {
@@ -75,11 +108,11 @@ exports.getRecommendedEvents = async (req, res) => {
       }
 
       // Higher score = more relevant to the user
-      return {
-        ...event.toObject(),
-        score,
-      };
-    });
+        return {
+          ...event.toObject(),
+          score,
+        };
+      });
 
     // Sort events based on score
     const sortedEvents = scoredEvents.sort((a, b) => b.score - a.score);
@@ -137,41 +170,37 @@ exports.getAllEvents = async (req, res) => {
     if (department) filter.department = department;
     if (type) filter.type = type;
 
-    const events = await Event.find(filter);
+    const [events, registrations, certificates] = await Promise.all([
+      Event.find(filter).sort({ date: 1 }),
+      userId ? Registration.find({ userId }).select("eventId") : Promise.resolve([]),
+      userId ? Certificate.find({ userId }).select("eventId") : Promise.resolve([]),
+    ]);
 
-    let registeredEventIds = [];
-
-    if (userId) {
-      const registrations = await Registration.find({ userId });
-      registeredEventIds = registrations.map(r =>
-        r.eventId.toString()
-      );
-    }
-
+    const registeredEventIds = new Set(registrations.map((item) => String(item.eventId)));
+    const certifiedEventIds = new Set(certificates.map((item) => String(item.eventId)));
     const now = new Date();
 
     const active = [];
-    const expired = [];
+    const completed = [];
 
-    events.forEach(e => {
-      const isExpired = new Date(e.applyBy) < now;
-
+    events.forEach((event) => {
+      const isActive = isEventActiveForUser(event, certifiedEventIds, now);
       const eventObj = {
-        ...e._doc,
-        // Status can be used for advanced UI if needed
-        approvalStatus: e.status,
-        status: isExpired ? "expired" : "active",
-        isRegistered: registeredEventIds.includes(e._id.toString())
+        ...event._doc,
+        approvalStatus: event.status,
+        eventState: isActive ? "active" : "completed",
+        isRegistered: registeredEventIds.has(event._id.toString()),
+        isCertified: certifiedEventIds.has(event._id.toString()),
       };
 
-      if (isExpired) expired.push(eventObj);
-      else active.push(eventObj);
+      if (isActive) active.push(eventObj);
+      else completed.push(eventObj);
     });
 
     res.json({
       active,
-      expired,
-      total: events.length
+      completed,
+      total: events.length,
     });
 
   } catch (err) {
@@ -184,40 +213,36 @@ exports.getEventsByDept = async (req, res) => {
   try {
     const { userId } = req.query;
 
-    const events = await Event.find({
-      department: req.params.dept
-    });
+    const [events, registrations, certificates] = await Promise.all([
+      Event.find({ department: req.params.dept }).sort({ date: 1 }),
+      userId ? Registration.find({ userId }).select("eventId") : Promise.resolve([]),
+      userId ? Certificate.find({ userId }).select("eventId") : Promise.resolve([]),
+    ]);
 
-    let registeredEventIds = [];
-    if (userId) {
-      const registrations = await Registration.find({ userId });
-      registeredEventIds = registrations.map(r =>
-        r.eventId.toString()
-      );
-    }
-
+    const registeredEventIds = new Set(registrations.map((item) => String(item.eventId)));
+    const certifiedEventIds = new Set(certificates.map((item) => String(item.eventId)));
     const now = new Date();
 
     const active = [];
-    const expired = [];
+    const completed = [];
 
-    events.forEach(e => {
-      const isExpired = new Date(e.applyBy) < now;
-
+    events.forEach((event) => {
+      const isActive = isEventActiveForUser(event, certifiedEventIds, now);
       const eventObj = {
-        ...e._doc,
-        status: isExpired ? "expired" : "active",
-        isRegistered: registeredEventIds.includes(e._id.toString())
+        ...event._doc,
+        eventState: isActive ? "active" : "completed",
+        isRegistered: registeredEventIds.has(event._id.toString()),
+        isCertified: certifiedEventIds.has(event._id.toString()),
       };
 
-      if (isExpired) expired.push(eventObj);
-      else active.push(eventObj);
+      if (isActive) active.push(eventObj);
+      else completed.push(eventObj);
     });
 
     res.json({
       active,
-      expired,
-      total: events.length
+      completed,
+      total: events.length,
     });
 
   } catch (err) {

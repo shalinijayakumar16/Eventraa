@@ -15,6 +15,14 @@ const eventSchema = new mongoose.Schema({
     required: true
   },
 
+  startTime: {
+    type: Date
+  },
+
+  endTime: {
+    type: Date
+  },
+
   applyBy: {
     type: Date,
     required: true

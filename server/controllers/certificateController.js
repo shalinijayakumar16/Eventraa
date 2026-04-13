@@ -1,4 +1,5 @@
 const Registration = require("../models/Registration");
+const Certificate = require("../models/Certificate");
 const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
@@ -61,6 +62,17 @@ exports.generateCertificates = async (req, res) => {
 
       // Save updated registration document
       await reg.save();
+
+      await Certificate.updateOne(
+        { userId: reg.userId._id, eventId: eventObjectId },
+        {
+          $set: {
+            certificateUrl,
+            generatedAt: new Date(),
+          },
+        },
+        { upsert: true }
+      );
     }
 
     return res.json({ message: "Certificates generated successfully" });

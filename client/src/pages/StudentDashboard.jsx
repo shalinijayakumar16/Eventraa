@@ -25,6 +25,8 @@ import { openGoogleCalendar } from "../utils/googleCalendar";
 function StudentDashboard() {
   const { showToast } = useToast();
   const [events, setEvents]           = useState([]);
+  const [activeEvents, setActiveEvents] = useState([]);
+  const [completedEvents, setCompletedEvents] = useState([]);
   const [myEvents, setMyEvents]       = useState([]);
   const [user, setUser]               = useState(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -87,10 +89,16 @@ function StudentDashboard() {
       // Ensure unapproved events are hidden
       if (Array.isArray(data)) {
         setEvents(data);
+        setActiveEvents(data);
+        setCompletedEvents([]);
       } else {
-        setEvents([...(data.active || []), ...(data.expired || [])]);
+        const activeList = data.active || [];
+        const completedList = data.completed || data.expired || [];
+        setActiveEvents(activeList);
+        setCompletedEvents(completedList);
+        setEvents([...activeList, ...completedList]);
       }
-    } catch (err) { console.log(err); setEvents([]); }
+    } catch (err) { console.log(err); setEvents([]); setActiveEvents([]); setCompletedEvents([]); }
   };
 
   const fetchMyEvents = async () => {
@@ -307,15 +315,7 @@ function StudentDashboard() {
     return [...new Set(events.map((event) => event.department).filter(Boolean))].sort();
   }, [events]);
 
-  // Filter events based on user input
-  const filteredEvents = events.filter(event => {
-    const eventDate = new Date(event.date);
-    const isPast    = eventDate < now;
-
-    if (activeTab === "registered" && !registeredIds.has(event._id)) return false;
-    if (activeTab === "upcoming"   && isPast)                         return false;
-    if (activeTab === "completed"  && !isPast)                        return false;
-
+  const matchesCommonFilters = useCallback((event) => {
     const matchesSearch = event.title?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesDepartment = selectedDepartment
@@ -334,21 +334,25 @@ function StudentDashboard() {
       ? eventDateKey === selectedDate
       : true;
 
-    // Return only matching events
     return matchesSearch && matchesDepartment && matchesType && matchesDate;
-  });
+  }, [searchTerm, selectedDepartment, selectedType, selectedDate]);
+
+  // Filter events based on user input
+  const filteredActiveEvents = activeEvents.filter(matchesCommonFilters);
+  const filteredCompletedEvents = completedEvents.filter(matchesCommonFilters);
+  const filteredEvents = [...filteredActiveEvents, ...filteredCompletedEvents];
 
   /* ── Stats ─────────────────────────────────────────────────────────────── */
   const totalEvents     = events.length;
   const registeredCount = myEvents.length;
-  const upcomingCount   = events.filter(e => new Date(e.date) >= now).length;
+  const upcomingCount   = activeEvents.filter(e => new Date(e.date) >= now).length;
   const departmentCount = [...new Set(events.map(e => e.department))].filter(Boolean).length;
 
   const tabCounts = {
     all:        events.length,
     registered: registeredIds.size,
     upcoming:   events.filter(e => new Date(e.date) >= now).length,
-    completed:  events.filter(e => new Date(e.date) < now).length,
+    completed:  completedEvents.length,
     wishlist:   wishlistIds.length,
   };
 
@@ -417,6 +421,32 @@ function StudentDashboard() {
     showToast("Event added to Google Calendar 🚀", "success");
   }, [showToast]);
 
+  const renderEventSection = (title, subtitle, list) => (
+    <section className="animate-fadeUp" style={{ marginBottom: 24 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+        <div>
+          <h2 style={{ margin: 0, color: "#E2E8F0", fontFamily: "'Outfit', sans-serif", letterSpacing: "-0.01em", fontSize: 20 }}>
+            {title}
+          </h2>
+          <p style={{ margin: "4px 0 0", color: "#64748B", fontSize: 13 }}>{subtitle}</p>
+        </div>
+        <div style={{ color: "#94A3B8", fontSize: 12 }}>{list.length} event{list.length !== 1 ? "s" : ""}</div>
+      </div>
+
+      <EventsGrid
+        events={list}
+        registeredIds={registeredIds}
+        activeTab={activeTab}
+        onDetails={handleOpenDetails}
+        onRegister={handleOpenRegister}
+        onAddToCalendar={handleAddToCalendar}
+        wishlistIds={wishlistIds}
+        wishlistLoadingMap={wishlistLoadingMap}
+        onToggleWishlist={handleToggleWishlist}
+      />
+    </section>
+  );
+
   /* ── Render ────────────────────────────────────────────────────────────── */
   return (
     <>
@@ -473,9 +503,6 @@ function StudentDashboard() {
               </div>
               <p style={{ color: "#475569", fontSize: 12, marginTop: 8 }}>All events are verified by admin</p>
             </div>
-
-            {/* Maintain compatibility with attendance feature */}
-            {/* Approval system does not affect attendance flow */}
 
             <StatsRow
               totalEvents={totalEvents}
@@ -545,18 +572,22 @@ function StudentDashboard() {
                 onAddToCalendar={handleAddToCalendar}
                 onToggleWishlist={handleToggleWishlist}
               />
+            ) : activeTab === "completed" ? (
+              renderEventSection("Completed Events", "Events that have ended or already have certificates generated for you.", filteredCompletedEvents)
+            ) : activeTab === "upcoming" ? (
+              renderEventSection("Active Events", "Browse events that are still open for participation.", filteredActiveEvents)
+            ) : activeTab === "registered" ? (
+              renderEventSection(
+                "Your Registered Events",
+                "Events you registered for, split across active and completed status.",
+                filteredEvents.filter((event) => registeredIds.has(event._id))
+              )
             ) : (
-              <EventsGrid
-                events={filteredEvents}
-                registeredIds={registeredIds}
-                activeTab={activeTab}
-                onDetails={handleOpenDetails}
-                onRegister={handleOpenRegister}
-                onAddToCalendar={handleAddToCalendar}
-                wishlistIds={wishlistIds}
-                wishlistLoadingMap={wishlistLoadingMap}
-                onToggleWishlist={handleToggleWishlist}
-              />
+              <>
+                {renderEventSection("Active Events", "Browse events that are still open for participation.", filteredActiveEvents)}
+                <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "8px 0 20px" }} />
+                {renderEventSection("Completed Events", "Ended events and events already completed via certificate.", filteredCompletedEvents)}
+              </>
             )}
           </main>
         </div>
