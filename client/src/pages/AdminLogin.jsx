@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BlobBg from "../components/BlobBg";
+import EventraLogo from "../components/EventraLogo";
 import { STYLES } from "../constants/styles";
 
 function AdminLogin() {
@@ -31,13 +32,7 @@ function AdminLogin() {
 
         {/* Admin login page */}
         <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2, padding: "0 24px", height: 68, display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(7,9,26,0.82)", backdropFilter: "blur(24px)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #6366F1, #8B5CF6, #EC4899)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 800, color: "#fff", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 16px rgba(99,102,241,0.45)" }}>E</div>
-            <div>
-              <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 19, background: "linear-gradient(135deg, #E2E8F0, #A5B4FC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "-0.02em" }}>Eventra</span>
-              <span style={{ color: "#475569", fontSize: 13, marginLeft: 8, fontFamily: "'DM Sans', sans-serif" }}>/ Admin</span>
-            </div>
-          </div>
+          <EventraLogo subtitle="Admin" />
 
           <button onClick={() => navigate("/")} className="btn-ghost" style={{ padding: "9px 18px", fontSize: 13 }}>
             Back to site

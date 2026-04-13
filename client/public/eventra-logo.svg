@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Eventra logo">
+  <defs>
+    <linearGradient id="eventraGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="55%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="eventraGradSoft" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.85"/>
+    </linearGradient>
+  </defs>
+  <polygon points="128,10 222,64 222,192 128,246 34,192 34,64" fill="url(#eventraGrad)"/>
+  <polygon points="128,28 206,73 206,183 128,228 50,183 50,73" fill="rgba(9,11,30,0.36)"/>
+  <path d="M84 80h98v22h-72v28h64v22h-64v24h72v22H84z" fill="#ffffff"/>
+  <path d="M84 80h98v22h-72v28h52v22h-52z" fill="url(#eventraGradSoft)" opacity="0.55"/>
+</svg>

@@ -1,3 +1,5 @@
+import EventraLogo from "../EventraLogo";
+
 const FOOTER_COLS = [
   { label: "Product", links: ["Features", "How It Works", "For Departments", "Roadmap"] },
   { label: "Support", links: ["Help Center", "Contact Us", "Status", "Privacy Policy"] },
@@ -16,16 +18,8 @@ function Footer() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 32, marginBottom: 40 }}>
           {/* Brand */}
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <div style={{
-                width: 30, height: 30, borderRadius: 9,
-                background: "linear-gradient(135deg, #6366F1, #8B5CF6, #EC4899)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13, fontWeight: 800, color: "#fff",
-                fontFamily: "'Outfit', sans-serif",
-                boxShadow: "0 4px 12px rgba(99,102,241,0.4)",
-              }}>E</div>
-              <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 18, background: "linear-gradient(135deg, #E2E8F0, #A5B4FC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Eventra</span>
+            <div style={{ marginBottom: 12 }}>
+              <EventraLogo size={30} textSize={18} />
             </div>
             <p style={{ color: "#475569", fontSize: 14, maxWidth: 220, lineHeight: 1.6 }}>
               Where campus events come alive.

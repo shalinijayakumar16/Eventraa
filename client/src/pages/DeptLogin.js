@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../hooks/useToast";
+import EventraLogo from "../components/EventraLogo";
 
 const API_BASE = "http://localhost:5000";
 
@@ -439,21 +440,8 @@ function DeptLogin() {
         </div>
 
         {/* Logo */}
-        <div className="animate-fadeUp" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 36, zIndex: 1, animationDelay: "0.1s" }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 11,
-            background: "linear-gradient(135deg, #6366F1, #8B5CF6, #EC4899)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 4px 18px rgba(99,102,241,0.45)",
-            fontSize: 16, fontWeight: 800, color: "#fff",
-            fontFamily: "'Outfit', sans-serif",
-          }}>E</div>
-          <span style={{
-            fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 22,
-            background: "linear-gradient(135deg, #E2E8F0, #A5B4FC)",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-            letterSpacing: "-0.02em",
-          }}>Eventra</span>
+        <div className="animate-fadeUp" style={{ marginBottom: 36, zIndex: 1, animationDelay: "0.1s" }}>
+          <EventraLogo size={36} textSize={22} />
         </div>
 
         {/* Card */}

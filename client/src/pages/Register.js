@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "../hooks/useToast";
+import EventraLogo from "../components/EventraLogo";
 
 const REGISTER_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap');
@@ -285,9 +286,8 @@ const getStrength = (pwd) => {
 
         {/* Navbar */}
         <div style={{ position:"fixed", top:0, left:0, right:0, zIndex:100, padding:"0 24px", height:58, display:"flex", alignItems:"center", justifyContent:"space-between", background:"rgba(7,9,26,0.82)", backdropFilter:"blur(20px)", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:9, cursor:"pointer" }} onClick={() => navigate("/")}>
-            <div style={{ width:30, height:30, borderRadius:9, background:"linear-gradient(135deg,#6366F1,#8B5CF6,#EC4899)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 4px 14px rgba(99,102,241,0.45)", fontSize:14, fontWeight:800, color:"#fff", fontFamily:"'Outfit',sans-serif" }}>E</div>
-            <span style={{ fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:18, background:"linear-gradient(135deg,#E2E8F0,#A5B4FC)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", letterSpacing:"-0.02em" }}>Eventra</span>
+          <div style={{ cursor:"pointer" }} onClick={() => navigate("/")}>
+            <EventraLogo size={30} textSize={18} gap={9} />
           </div>
           <button onClick={() => navigate("/login")} style={{ background:"rgba(255,255,255,0.04)", color:"#CBD5E1", border:"1px solid rgba(255,255,255,0.1)", padding:"7px 16px", borderRadius:9, fontFamily:"'Outfit',sans-serif", fontSize:13, fontWeight:500, cursor:"pointer" }}>
             Log In

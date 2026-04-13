@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Icon from "../icon";
+import EventraLogo from "../EventraLogo";
 
 function Navbar({ navigate }) {
   const [scrolled, setScrolled] = useState(false);
@@ -21,22 +22,7 @@ function Navbar({ navigate }) {
       borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
     }}>
       {/* Logo */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{
-          width: 34, height: 34, borderRadius: 10,
-          background: "linear-gradient(135deg, #6366F1, #8B5CF6, #EC4899)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 16px rgba(99,102,241,0.45)",
-          fontSize: 15, fontWeight: 800, color: "#fff",
-          fontFamily: "'Outfit', sans-serif",
-        }}>E</div>
-        <span style={{
-          fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 20,
-          background: "linear-gradient(135deg, #E2E8F0, #A5B4FC)",
-          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-          letterSpacing: "-0.02em",
-        }}>Eventra</span>
-      </div>
+      <EventraLogo textSize={20} />
 
       {/* Nav links */}
       <div className="nav-links" style={{ display: "flex", gap: 36, alignItems: "center" }}>

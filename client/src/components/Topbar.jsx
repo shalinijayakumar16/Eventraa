@@ -1,5 +1,6 @@
 import Icon from "./icon";
 import NotificationBell from "./NotificationBell";
+import EventraLogo from "./EventraLogo";
 
 function Topbar({ user, showProfile, onToggleProfile, onLogout, unreadCount, onToggleNotifications }) {
   return (
@@ -14,19 +15,7 @@ function Topbar({ user, showProfile, onToggleProfile, onLogout, unreadCount, onT
       }}
     >
       {/* Logo */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{
-          width: 34, height: 34, borderRadius: 10,
-          background: "linear-gradient(135deg, #6366F1, #8B5CF6, #EC4899)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 15, fontWeight: 800, color: "#fff", fontFamily: "'Outfit', sans-serif",
-          boxShadow: "0 4px 16px rgba(99,102,241,0.45)",
-        }}>E</div>
-        <div>
-          <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 19, background: "linear-gradient(135deg, #E2E8F0, #A5B4FC)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "-0.02em" }}>Eventra</span>
-          <span style={{ color: "#475569", fontSize: 13, marginLeft: 8, fontFamily: "'DM Sans', sans-serif" }}>/ Student</span>
-        </div>
-      </div>
+      <EventraLogo subtitle="Student" />
 
       {/* Right side */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Eventra favicon">
+  <defs>
+    <!-- Blue gradient: Indigo to Violet -->
+    <linearGradient id="blueFaviconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <!-- Subtle shadow gradient -->
+    <linearGradient id="shadowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#7C3AED" stop-opacity="0.3"/>
+    </linearGradient>
+    <!-- Glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="128" cy="128" r="120" fill="url(#blueFaviconGrad)" opacity="0.15"/>
+
+  <!-- Main hexagon -->
+  <polygon points="128,20 220,70 220,170 128,220 36,170 36,70" fill="url(#blueFaviconGrad)" filter="url(#glow)"/>
+
+  <!-- Inner shadow hexagon -->
+  <polygon points="128,35 208,78 208,170 128,213 48,170 48,78" fill="url(#shadowGrad)"/>
+
+  <!-- Letter E - simplified for favicon readability -->
+  <g fill="#ffffff" font-family="Arial, sans-serif" font-size="90" font-weight="bold" text-anchor="middle" dominant-baseline="central">
+    <text x="128" y="128">E</text>
+  </g>
+
+  <!-- Accent glow corner -->
+  <circle cx="218" cy="50" r="8" fill="#EC4899" opacity="0.6" filter="url(#glow)"/>
+</svg>
