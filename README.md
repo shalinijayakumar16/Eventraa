@@ -102,3 +102,7 @@ Your Shalini Jayakumar
 📌 Note
 
 This project is developed as part of an AI Full Stack academic submission
+
+## 📄 License
+
+This project is licensed under the MIT License.
