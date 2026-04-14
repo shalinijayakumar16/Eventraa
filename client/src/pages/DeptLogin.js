@@ -389,6 +389,9 @@ function DeptLogin() {
 
       if (res.ok) {
         localStorage.setItem("deptId", payload.deptId);
+        if (data?.token) {
+          localStorage.setItem("token", data.token);
+        }
         showToast("Login successful ✅", "success");
         navigate("/dept-dashboard");
       } else {

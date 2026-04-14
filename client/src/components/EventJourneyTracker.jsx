@@ -48,7 +48,10 @@ function EventJourneyTracker({ eventId, userId }) {
       setError("");
 
       try {
-        const response = await axios.get(apiUrl(`/api/student/event-journey/${eventId}/${userId}`));
+        const token = localStorage.getItem("token");
+        const response = await axios.get(apiUrl(`/api/student/event-journey/${eventId}`), {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         const payload = response.data || {};
 
         setJourney({

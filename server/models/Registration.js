@@ -16,6 +16,15 @@ const registrationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    attendance: {
+      type: String,
+      enum: ["registered", "present", "absent"],
+      default: "registered",
+    },
+    certificateGenerated: {
+      type: Boolean,
+      default: false,
+    },
     // Store generated certificate link
     certificateUrl: {
       type: String,
@@ -30,6 +39,14 @@ const registrationSchema = new mongoose.Schema(
     department: {
       type: String,
       required: true
+    },
+    studentDepartment: {
+      type: String,
+      default: ""
+    },
+    interestLevel: {
+      type: Number,
+      default: null
     },
     year: {
       type: String,

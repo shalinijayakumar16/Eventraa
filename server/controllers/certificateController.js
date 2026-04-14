@@ -1,5 +1,6 @@
 const Registration = require("../models/Registration");
 const Certificate = require("../models/Certificate");
+const Attendance = require("../models/Attendance");
 const mongoose = require("mongoose");
 const fs = require("fs");
 const path = require("path");
@@ -31,27 +32,55 @@ exports.generateCertificates = async (req, res) => {
 
     fs.mkdirSync(CERTIFICATE_DIR, { recursive: true });
 
-    // Fetch only attended students
-    const registrations = await Registration.find({
-      eventId: eventObjectId,
-      attended: true,
-    }).populate("userId eventId");
+    const [presentAttendance, attendedOrPresentRegistrations] = await Promise.all([
+      Attendance.find({ eventId: eventObjectId, status: "present" }).select("userId"),
+      Registration.find({
+        eventId: eventObjectId,
+        $or: [{ attended: true }, { attendance: "present" }],
+      }).populate("userId eventId"),
+    ]);
 
-    console.log("Registrations found:", registrations);
+    const presentUserIds = new Set(
+      presentAttendance
+        .map((item) => String(item?.userId || ""))
+        .filter(Boolean)
+    );
+
+    const registrations = await Registration.find({ eventId: eventObjectId })
+      .populate("userId eventId")
+      .then((all) =>
+        all.filter((registration) => {
+          const registrationUserId = String(registration?.userId?._id || registration?.userId || "");
+          if (!registrationUserId) return false;
+
+          return (
+            Boolean(registration?.attended) ||
+            registration?.attendance === "present" ||
+            presentUserIds.has(registrationUserId)
+          );
+        })
+      );
+
+    console.log("[certificate:generate] eventId=", String(eventObjectId));
+    console.log("[certificate:generate] present attendance count:", presentAttendance.length);
+    console.log("[certificate:generate] prefiltered registration count:", attendedOrPresentRegistrations.length);
+    console.log("[certificate:generate] eligible registration count:", registrations.length);
 
     // Ensure registrations array is not empty
     if (registrations.length === 0) {
       return res.status(400).json({
-        message: "No attended students found for this event",
+        message: "No present students found for this event",
       });
     }
+
+    const updated = [];
 
     // Generate certificate placeholder for each attendee
     for (const reg of registrations) {
       console.log("Generating certificate for:", reg.userId?.name || reg.userId?._id);
 
       // Loop through each student and assign certificate
-      const fileName = `certificate-${reg.userId._id}.pdf`;
+      const fileName = `certificate-${eventObjectId}-${reg.userId._id}.pdf`;
       const filePath = path.join(CERTIFICATE_DIR, fileName);
 
       ensureCertificateFile(filePath);
@@ -59,6 +88,9 @@ exports.generateCertificates = async (req, res) => {
       // Save accessible file path for frontend download
       const certificateUrl = `/certificates/${fileName}`;
       reg.certificateUrl = certificateUrl;
+      reg.certificateGenerated = true;
+      reg.attended = true;
+      reg.attendance = "present";
 
       // Save updated registration document
       await reg.save();
@@ -73,9 +105,23 @@ exports.generateCertificates = async (req, res) => {
         },
         { upsert: true }
       );
+
+      updated.push({
+        registrationId: reg._id,
+        userId: reg.userId?._id,
+        eventId: eventObjectId,
+        attendance: reg.attendance,
+        certificateGenerated: reg.certificateGenerated,
+        certificateUrl,
+      });
     }
 
-    return res.json({ message: "Certificates generated successfully" });
+    console.log("[certificate:generate] updated registrations:", updated);
+    return res.json({
+      message: "Certificates generated successfully",
+      updatedCount: updated.length,
+      registrations: updated,
+    });
   } catch (error) {
     console.error("Certificate error:", error);
     return res.status(500).json({ message: "Error generating certificates" });
@@ -84,11 +130,25 @@ exports.generateCertificates = async (req, res) => {
 
 exports.downloadCertificate = async (req, res) => {
   try {
-    const { eventId, userId } = req.params;
+    const { eventId } = req.params;
+    const userIdFromParams = req.params.userId;
+    const authUserId = req.user?.id;
+
+    if (!authUserId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (userIdFromParams && userIdFromParams !== authUserId) {
+      return res.status(403).json({ message: "Forbidden: cannot access another user's certificate" });
+    }
+
+    const userId = authUserId;
 
     if (!mongoose.Types.ObjectId.isValid(eventId) || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid eventId or userId" });
     }
+
+    console.log("[certificate:download] userId=", userId, "eventId=", eventId);
 
     fs.mkdirSync(CERTIFICATE_DIR, { recursive: true });
 
@@ -102,7 +162,7 @@ exports.downloadCertificate = async (req, res) => {
     }
 
     const eventObjectId = new mongoose.Types.ObjectId(eventId);
-    const fileName = `certificate-${userId}.pdf`;
+    const fileName = `certificate-${eventObjectId}-${userId}.pdf`;
     const filePath = path.join(CERTIFICATE_DIR, fileName);
 
     if (!fs.existsSync(filePath)) {
@@ -126,6 +186,9 @@ exports.downloadCertificate = async (req, res) => {
       { userId, eventId: eventObjectId },
       {
         $set: {
+          attended: true,
+          attendance: "present",
+          certificateGenerated: true,
           certificateUrl,
         },
       }

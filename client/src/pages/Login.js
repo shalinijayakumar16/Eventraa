@@ -213,6 +213,8 @@ const LoginBlobBg = () => (
   // ✅ MOVE HANDLE LOGIN HERE
   const handleLogin = async () => {
     try {
+      console.log("[StudentLogin] Sending request to:", apiUrl("/api/users/login"));
+
       const res = await fetch(apiUrl("/api/users/login"), {
         method: "POST",
         headers: {
@@ -221,15 +223,24 @@ const LoginBlobBg = () => (
         body: JSON.stringify({ registerNo, password }),
       });
 
+      console.log("[StudentLogin] Response status:", res.status);
+
       const data = await res.json().catch(() => ({}));
+      console.log("[StudentLogin] Response body:", data);
 
       if (res.ok) {
+        if (!data?.token || !data?.user?._id) {
+          throw new Error("Invalid login response");
+        }
+
         showToast("Login successful! 🚀", "success");
 
-      // ✅ ADD THESE LINES
-      localStorage.setItem("userId", data.user._id);
+      // Clear stale student session state before saving new login identity.
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("student");
 
-      // (optional but recommended)
+      localStorage.setItem("userId", data.user._id);
       localStorage.setItem("token", data.token);
       localStorage.setItem("student", JSON.stringify(data.user));
 
@@ -238,7 +249,8 @@ const LoginBlobBg = () => (
         showToast(data.message || "Login failed", "error");
       }
     } catch (error) {
-      showToast("Unable to connect to server", "error");
+      console.error("[StudentLogin] Login error:", error);
+      showToast(error?.message || "Unable to connect to server", "error");
     }
   };
 

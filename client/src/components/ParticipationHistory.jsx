@@ -6,6 +6,12 @@ function ParticipationHistory({ userId }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("recent");
+  const token = localStorage.getItem("token");
+
+  const getAuthHeaders = (extraHeaders = {}) => ({
+    ...extraHeaders,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  });
 
   useEffect(() => {
     if (!userId) {
@@ -17,8 +23,14 @@ function ParticipationHistory({ userId }) {
       setLoading(true);
       try {
         // Load attended events for logged-in student
-        const response = await fetch(`/api/registrations/history/${userId}`);
+        console.log("[ParticipationHistory] userId:", userId);
+        console.log("[ParticipationHistory] hasToken:", Boolean(token));
+
+        const response = await fetch(apiUrl("/api/registrations/history"), {
+          headers: getAuthHeaders(),
+        });
         const payload = await response.json();
+        console.log("[ParticipationHistory] history API response:", payload);
         setHistory(Array.isArray(payload) ? payload : []);
       } catch (error) {
         setHistory([]);
@@ -28,7 +40,7 @@ function ParticipationHistory({ userId }) {
     };
 
     fetchHistory();
-  }, [userId]);
+  }, [userId, token]);
 
   const sortedHistory = useMemo(() => {
     const list = [...history];
@@ -132,7 +144,8 @@ function ParticipationHistory({ userId }) {
 
             const handleDownloadCertificate = async () => {
               try {
-                const response = await axios.get(apiUrl(`/api/certificates/download/${event._id}/${userId}`), {
+                const response = await axios.get(apiUrl(`/api/certificates/download/${event._id}`), {
+                  headers: getAuthHeaders(),
                   responseType: "blob",
                 });
 

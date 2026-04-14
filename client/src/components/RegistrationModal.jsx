@@ -1,6 +1,6 @@
 import Icon from "./icon";
 
-function RegistrationModal({ event, formValues, onFormChange, onSubmit, onClose }) {
+function RegistrationModal({ event, formValues, onFormChange, onConfirmRegistration, onClose, isSubmitting = false }) {
   return (
     <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal-box">
@@ -50,14 +50,21 @@ function RegistrationModal({ event, formValues, onFormChange, onSubmit, onClose 
 
         {/* Footer actions */}
         <div style={{ padding: "0 28px 24px", display: "flex", gap: 10 }}>
-          <button className="btn-ghost" onClick={onClose} style={{ padding: "11px 20px" }}>Cancel</button>
+          <button className="btn-ghost" onClick={onClose} style={{ padding: "11px 20px" }} disabled={isSubmitting}>Cancel</button>
           <button
             className="btn-primary-glow"
-            onClick={onSubmit}
+            onClick={onConfirmRegistration}
+            disabled={isSubmitting}
             style={{ flex: 1, justifyContent: "center", padding: "11px", animation: "glowPulse 3s ease infinite" }}
           >
-            <Icon name="check" size={15} color="white" />
-            Confirm Registration
+            {isSubmitting ? (
+              "Registering..."
+            ) : (
+              <>
+                <Icon name="check" size={15} color="white" />
+                Confirm Registration
+              </>
+            )}
           </button>
         </div>
       </div>

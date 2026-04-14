@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 // 🔥 REGISTER USER
 exports.registerUser = async (req, res) => {
@@ -53,9 +54,19 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid password" });
     }
 
+    const token = jwt.sign(
+      { id: user._id.toString(), role: "student" },
+      process.env.JWT_SECRET || "eventra-dev-secret",
+      { expiresIn: "7d" }
+    );
+
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
     res.json({
       message: "Login successful",
-      user
+      token,
+      user: safeUser,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

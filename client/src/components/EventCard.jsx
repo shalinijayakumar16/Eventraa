@@ -6,6 +6,7 @@ import { assetUrl } from "../constants/api";
 
 function EventCard({
   event,
+  registrationMeta,
   alreadyRegistered,
   onDetails,
   onRegister,
@@ -32,6 +33,11 @@ function EventCard({
   const isPast    = new Date(event.date) < new Date();
   const isCompleted = event.eventState === "completed";
   const isUnavailable = isPast || isCompleted;
+  const attendanceStatus = registrationMeta?.attendance || (registrationMeta?.attended ? "present" : "registered");
+  const canDownloadCertificate =
+    Boolean(registrationMeta?.certificateGenerated) &&
+    attendanceStatus === "present" &&
+    Boolean(registrationMeta?.certificateUrl);
 
   return (
     <div className="event-card">
@@ -146,6 +152,28 @@ function EventCard({
 
         {/* Buttons */}
         <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", display: "grid", gap: 8 }}>
+          {canDownloadCertificate && (
+            <button
+              className="btn-ghost"
+              style={{
+                justifyContent: "center",
+                fontSize: 12,
+                padding: "9px 10px",
+                border: "1px solid rgba(16,185,129,0.42)",
+                background: "linear-gradient(135deg, rgba(16,185,129,0.18), rgba(45,212,191,0.12))",
+                color: "#99F6E4",
+              }}
+              onClick={() => {
+                const certificateLink = registrationMeta?.certificateUrl;
+                if (!certificateLink) return;
+                window.open(assetUrl(certificateLink), "_blank", "noopener,noreferrer");
+              }}
+              title="Download your certificate"
+            >
+              <Icon name="download" size={13} color="#6EE7B7" />
+              Download Certificate
+            </button>
+          )}
           <button
             className="btn-ghost"
             style={{

@@ -405,6 +405,7 @@ function DeptDashboard() {
   const [attSearch, setAttSearch]           = useState("");
   const [certificateLoadingMap, setCertificateLoadingMap] = useState({});
   const dept = localStorage.getItem("deptId");
+  const token = localStorage.getItem("token");
   const [deptCoordinator, setDeptCoordinator] = useState("");
 
   /* ── Form field helpers ─────────────────────────────────────────────────── */
@@ -461,7 +462,12 @@ function DeptDashboard() {
   /* ── Registrations ─────────────────────────────────────────────────────── */
   const viewRegistrations = async (eventId, eventTitle) => {
     setRegsLoading(true); setRegsEventTitle(eventTitle||"Event"); setShowRegs(true);
-    try { const res=await fetch(apiUrl(`/api/registrations/event-registrations/${eventId}`)); setRegistrations(await res.json()); }
+    try {
+      const res = await fetch(apiUrl(`/api/department/registrations?eventId=${eventId}`), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      setRegistrations(await res.json());
+    }
     catch { setRegistrations([]); } finally { setRegsLoading(false); }
   };
   const closeRegs = () => { setShowRegs(false); setRegistrations([]); setRegsEventTitle(""); };
@@ -475,12 +481,14 @@ function DeptDashboard() {
       console.log("Generating certificates for:", eventId);
 
       // Trigger certificate creation for attendees
-      await axios.post(apiUrl(`/api/certificates/generate/${eventId}`));
+      const response = await axios.post(apiUrl(`/api/certificates/generate/${eventId}`));
+      console.log("[DeptDashboard] generate certificates response:", response?.data);
 
       alert("Certificates generated successfully");
       showToast("Certificates generated successfully", "success");
     } catch (error) {
       console.error(error);
+      console.error("[DeptDashboard] generate certificates error:", error?.response?.data || error?.message);
       alert("Error generating certificates");
       showToast(error?.response?.data?.message || error.message || "Error generating certificates", "error");
     } finally {

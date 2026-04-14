@@ -1,4 +1,5 @@
-const rawBaseUrl = (process.env.REACT_APP_BASE_URL || "").trim();
+const defaultDevBaseUrl = process.env.NODE_ENV === "development" ? "http://localhost:5000" : "";
+const rawBaseUrl = (process.env.REACT_APP_BASE_URL || defaultDevBaseUrl).trim();
 
 export const BASE_URL = rawBaseUrl.replace(/\/+$/, "");
 

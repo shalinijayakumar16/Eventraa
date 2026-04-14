@@ -1,4 +1,6 @@
 const Department = require("../models/Department");
+const Registration = require("../models/Registration");
+const jwt = require("jsonwebtoken");
 
 // Get all departments
 exports.getDepartments = async (req, res) => {
@@ -88,12 +90,57 @@ exports.loginDepartment = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    const token = jwt.sign(
+      {
+        id: department.deptId,
+        role: "department",
+        department: department.deptId,
+      },
+      process.env.JWT_SECRET || "eventra-dev-secret",
+      { expiresIn: "12h" }
+    );
+
     return res.status(200).json({
       message: "Department login successful",
       department: department.deptId,
+      token,
     });
   } catch (error) {
     console.error("[Department Login] Unexpected error", error);
     return res.status(500).json({ message: "Server error during department login" });
+  }
+};
+
+exports.getDepartmentRegistrations = async (req, res) => {
+  try {
+    const department = req.user?.department;
+    const eventId = req.query?.eventId;
+
+    if (!department) {
+      return res.status(400).json({ message: "Department claim missing in token" });
+    }
+
+    const query = { department };
+    if (eventId) {
+      query.eventId = eventId;
+    }
+
+    const registrations = await Registration.find(query)
+      .populate("userId", "name email registerNo department year")
+      .populate("eventId", "title date department")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const normalized = registrations.map((registration) => ({
+      ...registration,
+      name: registration?.name || registration?.userId?.name || "",
+      registerNo: registration?.registerNo || registration?.userId?.registerNo || "",
+      department: registration?.studentDepartment || registration?.userId?.department || "",
+      year: registration?.year || registration?.userId?.year || "",
+    }));
+
+    return res.json(normalized);
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching registrations" });
   }
 };

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import { useToast } from "../hooks/useToast";
 
 // Styles & constants
@@ -45,6 +46,7 @@ function StudentDashboard() {
   const [detailsEvent, setDetailsEvent]   = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [formValues, setFormValues]       = useState({});
+  const [isConfirmingRegistration, setIsConfirmingRegistration] = useState(false);
   const [detailsConflictingEvents, setDetailsConflictingEvents] = useState([]);
   const [clashDialog, setClashDialog] = useState({
     open: false,
@@ -64,10 +66,19 @@ function StudentDashboard() {
   const [selectedDate, setSelectedDate] = useState("");
 
   const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
   const wishlistStorageKey = `eventra_wishlist_${userId || "guest"}`;
 
-  useEffect(() => { fetchEvents(); }, []);
-  useEffect(() => { fetchMyEvents(); fetchUser(); fetchWishlistIds(); fetchNotificationSummary(); }, []);
+  const getAuthHeaders = useCallback(
+    (extraHeaders = {}) => ({
+      ...extraHeaders,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    }),
+    [token]
+  );
+
+  useEffect(() => { fetchEvents(); }, [userId]);
+  useEffect(() => { fetchMyEvents(); fetchUser(); fetchWishlistIds(); fetchNotificationSummary(); }, [userId, token]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -75,7 +86,7 @@ function StudentDashboard() {
     }, 30000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [userId, token]);
 
   /* ── API calls ─────────────────────────────────────────────────────────── */
   const fetchEvents = async () => {
@@ -105,9 +116,15 @@ function StudentDashboard() {
 
   const fetchMyEvents = async () => {
     try {
-      const res  = await fetch(apiUrl(`/api/registrations/my-events/${userId}`));
+      setMyEvents([]);
+      console.log("[StudentDashboard] fetchMyEvents userId:", userId);
+      console.log("[StudentDashboard] fetchMyEvents hasToken:", Boolean(token));
+      const res  = await fetch(apiUrl("/api/registrations/my-events"), {
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) throw new Error("Unable to fetch registrations");
       const data = await res.json();
+      console.log("[StudentDashboard] my-events API response:", data);
       setMyEvents(Array.isArray(data) ? data : []);
     } catch (err) { console.log(err); setMyEvents([]); }
   };
@@ -158,7 +175,10 @@ function StudentDashboard() {
   const fetchNotificationSummary = useCallback(async () => {
     try {
       const response = await fetch(apiUrl("/api/notifications"), {
-        headers: userId ? { "x-user-id": userId } : {},
+        headers: {
+          ...(userId ? { "x-user-id": userId } : {}),
+          ...getAuthHeaders(),
+        },
       });
 
       if (!response.ok) {
@@ -180,7 +200,7 @@ function StudentDashboard() {
     } catch (error) {
       // Keep existing state if API is unavailable
     }
-  }, [userId]);
+  }, [userId, getAuthHeaders]);
 
   const handleToggleWishlist = useCallback(async (eventId) => {
     if (!eventId) return;
@@ -237,7 +257,7 @@ function StudentDashboard() {
     try {
       const response = await fetch(apiUrl("/api/events/check-clash"), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ userId, eventId }),
       });
 
@@ -256,36 +276,80 @@ function StudentDashboard() {
     } catch (error) {
       return { clash: false, conflictingEvents: [] };
     }
-  }, [userId]);
+  }, [userId, getAuthHeaders]);
 
   const openRegistrationForm = useCallback((event) => {
-    setSelectedEvent(event);
+    if (!event) return;
+
+    const normalizedEventId = event._id || event.id;
+    if (!normalizedEventId) {
+      showToast("Invalid event. Please refresh and try again.", "error");
+      return;
+    }
+
+    setSelectedEvent({ ...event, id: normalizedEventId });
     setFormValues({});
-  }, []);
+  }, [showToast]);
 
   /* ── Registration submit ───────────────────────────────────────────────── */
-  const handleSubmitForm = async () => {
+  const handleConfirmRegistration = async () => {
+    if (!selectedEvent) {
+      showToast("No event selected.", "error");
+      return;
+    }
+
+    if (!userId) {
+      showToast("Please log in to register.", "error");
+      return;
+    }
+
+    const eventId = selectedEvent.id || selectedEvent._id;
+    if (!eventId) {
+      showToast("Invalid event ID.", "error");
+      return;
+    }
+
     for (let field of selectedEvent.formFields || []) {
       if (field.required && !formValues[field.label]) {
         showToast(`${field.label} is required`, "warning");
         return;
       }
     }
+
+    const feedback =
+      formValues.feedback ||
+      formValues.ratingValue ||
+      formValues.rating ||
+      "";
+
+    const rating = Number(feedback);
+
+    const answers = Object.entries(formValues).map(([q, a]) => ({ question: q, answer: a }));
+
+    setIsConfirmingRegistration(true);
+
+    console.log("User:", userId);
+    console.log("Event:", eventId);
+
     try {
-      const response = await fetch(apiUrl("/api/registrations/register"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          eventId: selectedEvent._id,
-          answers: Object.entries(formValues).map(([q, a]) => ({ question: q, answer: a })),
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Registration failed");
-      }
+      console.log("Sending request...");
+      const response = await axios.post(
+        apiUrl("/api/registrations"),
+        {
+          eventId: selectedEvent._id || selectedEvent.id,
+          interestLevel: Number.isFinite(rating) ? rating : null,
+          feedback,
+          answers,
+        },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          timeout: 15000,
+        }
+      );
+      console.log("Response:", response);
+
       showToast("Registered successfully 🎉", "success");
-      setMyEvents(prev => [...prev, { eventId: selectedEvent._id }]);
+      setMyEvents(prev => [...prev, { eventId }]);
 
       // Add a local success notification for immediate UX feedback
       setNotifications((prev) => {
@@ -302,14 +366,35 @@ function StudentDashboard() {
 
       setSelectedEvent(null);
       setFormValues({});
-      fetchMyEvents();
-    } catch (err) { console.log(err); }
+      await fetchMyEvents().catch(() => {});
+      setIsConfirmingRegistration(false);
+    } catch (error) {
+      console.error("Registration failed:", error?.response?.data || error?.message || error);
+      console.error("Registration error:", error);
+      setIsConfirmingRegistration(false);
+      showToast(error?.response?.data?.message || error?.message || "Registration failed", "error");
+    }
   };
 
   /* ── Logout ────────────────────────────────────────────────────────────── */
   const handleLogout = () => {
+    setEvents([]);
+    setActiveEvents([]);
+    setCompletedEvents([]);
+    setMyEvents([]);
+    setUser(null);
+    setWishlistIds([]);
+    setNotifications([]);
+    setUnreadCount(0);
+    setDetailsEvent(null);
+    setSelectedEvent(null);
+    setFormValues({});
+
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
+    localStorage.removeItem("student");
+    sessionStorage.clear();
+
     window.location.href = "/";
   };
 
@@ -317,6 +402,22 @@ function StudentDashboard() {
   const now = new Date();
 
   const registeredIds = useMemo(() => new Set(myEvents.map(e => e.eventId?._id || e.eventId)), [myEvents]);
+
+  const registrationMetaByEventId = useMemo(() => {
+    return myEvents.reduce((acc, item) => {
+      const eventId = String(item?.eventId?._id || item?.eventId || "");
+      if (!eventId) return acc;
+
+      acc[eventId] = {
+        attendance: item?.attendance || (item?.attended ? "present" : "registered"),
+        attended: Boolean(item?.attended),
+        certificateGenerated: Boolean(item?.certificateGenerated || item?.certificateUrl),
+        certificateUrl: item?.certificateUrl || "",
+      };
+
+      return acc;
+    }, {});
+  }, [myEvents]);
 
   const departmentOptions = useMemo(() => {
     return [...new Set(events.map((event) => event.department).filter(Boolean))].sort();
@@ -443,6 +544,7 @@ function StudentDashboard() {
       <EventsGrid
         events={list}
         registeredIds={registeredIds}
+        registrationMetaByEventId={registrationMetaByEventId}
         activeTab={activeTab}
         onDetails={handleOpenDetails}
         onRegister={handleOpenRegister}
@@ -667,7 +769,8 @@ function StudentDashboard() {
             event={selectedEvent}
             formValues={formValues}
             onFormChange={setFormValues}
-            onSubmit={handleSubmitForm}
+            isSubmitting={isConfirmingRegistration}
+            onConfirmRegistration={handleConfirmRegistration}
             onClose={() => setSelectedEvent(null)}
           />
         )}

@@ -1,7 +1,7 @@
 import Icon from "./icon";
 import EventCard from "./EventCard";
 
-function EventsGrid({ events, registeredIds, activeTab, onDetails, onRegister, onAddToCalendar, wishlistIds, wishlistLoadingMap, onToggleWishlist }) {
+function EventsGrid({ events, registeredIds, activeTab, onDetails, onRegister, onAddToCalendar, wishlistIds, wishlistLoadingMap, onToggleWishlist, registrationMetaByEventId = {} }) {
   if (events.length === 0) {
     return (
       <div className="events-grid animate-fadeUp" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, animationDelay: "0.2s" }}>
@@ -10,7 +10,7 @@ function EventsGrid({ events, registeredIds, activeTab, onDetails, onRegister, o
             <Icon name="calendar" size={28} color="#6366F1" />
           </div>
           <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 18, color: "#64748B", marginBottom: 8 }}>
-            {activeTab === "registered" ? "No registered events yet"
+            {activeTab === "registered" ? "No registrations yet"
               : activeTab === "upcoming"   ? "No upcoming events"
               : activeTab === "completed"  ? "No completed events"
               : "No events found"}
@@ -29,6 +29,7 @@ function EventsGrid({ events, registeredIds, activeTab, onDetails, onRegister, o
         <EventCard
           key={event._id}
           event={event}
+          registrationMeta={registrationMetaByEventId[event._id] || null}
           alreadyRegistered={registeredIds.has(event._id)}
           onDetails={onDetails}
           onRegister={onRegister}

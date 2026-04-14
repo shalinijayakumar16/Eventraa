@@ -5,7 +5,17 @@ const Certificate = require("../models/Certificate");
 
 exports.getEventJourney = async (req, res) => {
   try {
-    const { eventId, userId } = req.params;
+    const { eventId } = req.params;
+    const userIdFromParams = req.params.userId;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (userIdFromParams && userIdFromParams !== userId) {
+      return res.status(403).json({ message: "Forbidden: cannot access another user's journey" });
+    }
 
     if (!mongoose.Types.ObjectId.isValid(eventId) || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid eventId or userId" });
