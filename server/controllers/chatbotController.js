@@ -3,6 +3,7 @@ const Registration = require("../models/Registration");
 const User = require("../models/User");
 const Attendance = require("../models/Attendance");
 const { detectIntentWithOpenAI, generateEventraReplyWithOpenAI } = require("../services/openaiService");
+const { getSemanticFaqReply } = require("../services/faqEmbeddingService");
 
 const eventNameFromMessage = (message, extractedName) => {
   const normalized = String(extractedName || "").trim();
@@ -933,6 +934,28 @@ exports.chatbot = async (req, res) => {
     console.error("Chatbot error:", error);
     return res.status(500).json({
       reply: "Sorry, I couldn’t process that right now. Please try again.",
+    });
+  }
+};
+
+exports.querySemanticChatbot = async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!String(message || "").trim()) {
+      return res.status(400).json({ reply: "message is required" });
+    }
+
+    const result = await getSemanticFaqReply(message, 0.7);
+
+    return res.json({
+      reply: result.reply,
+      similarity: result.similarity,
+      intent: "faq_semantic",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      reply: "Sorry, I didn’t understand. Please contact support.",
     });
   }
 };

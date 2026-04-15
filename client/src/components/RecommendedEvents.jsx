@@ -23,10 +23,17 @@ function RecommendedEvents({
       setLoading(true);
 
       try {
-        // Fetch recommendations from participation-history endpoint
-        const response = await fetch(apiUrl(`/api/recommendations/${userId}`), {
+        // Fetch ML recommendations first.
+        let response = await fetch(apiUrl(`/api/recommendations/ml/${userId}`), {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
+
+        // Fallback to previous endpoint if ML route is temporarily unavailable.
+        if (!response.ok) {
+          response = await fetch(apiUrl(`/api/recommendations/${userId}`), {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+        }
 
         if (!response.ok) {
           throw new Error("Recommendation API unavailable");

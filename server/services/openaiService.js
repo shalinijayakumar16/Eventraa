@@ -79,85 +79,93 @@ const detectIntentWithOpenAI = async (message) => {
     return fallbackIntentDetection(message);
   }
 
-  const response = await fetch(OPENAI_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-      temperature: 0,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            'Extract intent and entities from user queries related to Eventra event management system. Only return JSON. Supported intents: list_events_today, list_all_events, events_filtered, check_registration, registration_summary, show_attendance, show_attendance_today, recommend_events, general_eventra_query, greeting, gratitude, goodbye, help. Use registration_summary for count/total registration questions. Use events_filtered for department/type/date filtered event queries like "events for IT" or "CS events this week". Strict schema: {"intent":"<intent>","eventName":"<optional>","department":"<optional>","category":"<optional>","eventType":"<optional>","dateRange":"<optional: today|tomorrow|week|upcoming>","keywords":["<optional>"]}.',
-        },
-        {
-          role: "user",
-          content: message,
-        },
-      ],
-    }),
-  });
+  try {
+    const response = await fetch(OPENAI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+        temperature: 0,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content:
+              'Extract intent and entities from user queries related to Eventra event management system. Only return JSON. Supported intents: list_events_today, list_all_events, events_filtered, check_registration, registration_summary, show_attendance, show_attendance_today, recommend_events, general_eventra_query, greeting, gratitude, goodbye, help. Use registration_summary for count/total registration questions. Use events_filtered for department/type/date filtered event queries like "events for IT" or "CS events this week". Strict schema: {"intent":"<intent>","eventName":"<optional>","department":"<optional>","category":"<optional>","eventType":"<optional>","dateRange":"<optional: today|tomorrow|week|upcoming>","keywords":["<optional>"]}.',
+          },
+          {
+            role: "user",
+            content: message,
+          },
+        ],
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`OpenAI request failed with status ${response.status}`);
+    if (!response.ok) {
+      return fallbackIntentDetection(message);
+    }
+
+    const payload = await response.json();
+    const content = payload?.choices?.[0]?.message?.content || "";
+    const parsed = extractJsonObject(content) || fallbackIntentDetection(message);
+
+    const intent = SUPPORTED_INTENTS.has(parsed.intent) ? parsed.intent : "unknown";
+
+    return {
+      intent,
+      eventName: parsed.eventName || "",
+      department: parsed.department || "",
+      category: parsed.category || parsed.eventType || "",
+      eventType: parsed.eventType || parsed.category || "",
+      dateRange: parsed.dateRange || parsed.queryDate || "",
+      keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
+    };
+  } catch (error) {
+    return fallbackIntentDetection(message);
   }
-
-  const payload = await response.json();
-  const content = payload?.choices?.[0]?.message?.content || "";
-  const parsed = extractJsonObject(content) || fallbackIntentDetection(message);
-
-  const intent = SUPPORTED_INTENTS.has(parsed.intent) ? parsed.intent : "unknown";
-
-  return {
-    intent,
-    eventName: parsed.eventName || "",
-    department: parsed.department || "",
-    category: parsed.category || parsed.eventType || "",
-    eventType: parsed.eventType || parsed.category || "",
-    dateRange: parsed.dateRange || parsed.queryDate || "",
-    keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
-  };
 };
 
 const generateEventraReplyWithOpenAI = async ({ message, context }) => {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) return null;
 
-  const response = await fetch(OPENAI_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-      temperature: 0.2,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are Eventra Assistant. Answer only using the provided context. If context is missing, say what is unavailable and suggest next useful Eventra questions. Keep tone friendly, concise, and end with one helpful follow-up question.",
-        },
-        {
-          role: "user",
-          content: `Question: ${message}\n\nContext:\n${context}`,
-        },
-      ],
-    }),
-  });
+  try {
+    const response = await fetch(OPENAI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+        temperature: 0.2,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are Eventra Assistant. Answer only using the provided context. If context is missing, say what is unavailable and suggest next useful Eventra questions. Keep tone friendly, concise, and end with one helpful follow-up question.",
+          },
+          {
+            role: "user",
+            content: `Question: ${message}\n\nContext:\n${context}`,
+          },
+        ],
+      }),
+    });
 
-  if (!response.ok) {
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = await response.json();
+    const content = payload?.choices?.[0]?.message?.content;
+    return String(content || "").trim() || null;
+  } catch (error) {
     return null;
   }
-
-  const payload = await response.json();
-  const content = payload?.choices?.[0]?.message?.content;
-  return String(content || "").trim() || null;
 };
 
 module.exports = {

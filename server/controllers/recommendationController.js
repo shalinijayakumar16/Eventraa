@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Event = require("../models/Event");
 const Registration = require("../models/Registration");
 const Attendance = require("../models/Attendance");
+const { recommendEventsWithTfIdf } = require("../services/mlRecommendationService");
 
 const toRecommendation = (event) => ({
   eventId: String(event._id),
@@ -114,6 +115,25 @@ exports.getRecommendations = async (req, res) => {
     }
 
     return res.json(recommendations.map(toRecommendation));
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
+exports.getMlRecommendations = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid userId" });
+    }
+
+    if (req.user && req.user.id !== userId && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    const recommendations = await recommendEventsWithTfIdf({ userId, limit: 5 });
+    return res.json(recommendations);
   } catch (error) {
     return res.status(500).json({ message: error.message || "Server error" });
   }
