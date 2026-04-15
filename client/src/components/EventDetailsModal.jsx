@@ -7,7 +7,8 @@ import { TYPE_STYLE } from "../constants/config";
 import { assetUrl } from "../constants/api";
 
 function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToCalendar, clashConflictingEvents = [], userId }) {
-  const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
+  const displayEventType = event.eventType || event.type || "Other";
+  const typeStyle = TYPE_STYLE[displayEventType] || TYPE_STYLE.default;
   const isPast    = new Date(event.date) < new Date();
   const isCompleted = event.eventState === "completed";
   const isEnded = isPast || isCompleted;
@@ -36,7 +37,7 @@ function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToC
     { icon: "calendar", color: "#8B5CF6", label: "Event Date",  value: new Date(event.date).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) },
     event.applyBy && { icon: "clock", color: "#F59E0B", label: "Apply By", value: new Date(event.applyBy).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) },
     event.venue   && { icon: "map",   color: "#EC4899", label: "Venue",    value: event.venue },
-    event.type    && { icon: "tag",   color: typeStyle.color, label: "Type", value: event.type },
+    displayEventType && { icon: "tag",   color: typeStyle.color, label: "Type", value: displayEventType },
   ].filter(Boolean);
 
   return (
@@ -80,7 +81,7 @@ function EventDetailsModal({ event, alreadyJoined, onClose, onRegister, onAddToC
           {/* Title + badge */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
             <h2 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 22, color: "#E2E8F0", letterSpacing: "-0.02em", lineHeight: 1.2 }}>{event.title}</h2>
-            <span className="badge-pill" style={{ background: typeStyle.bg, border: `1px solid ${typeStyle.border}`, color: typeStyle.color, marginTop: 3 }}>{event.type}</span>
+            <span className="badge-pill" style={{ background: typeStyle.bg, border: `1px solid ${typeStyle.border}`, color: typeStyle.color, marginTop: 3 }}>{displayEventType}</span>
           </div>
 
           {/* Countdown */}

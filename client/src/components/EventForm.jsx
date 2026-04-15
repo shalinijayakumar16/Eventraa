@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { EVENT_TYPE_OPTIONS } from "../constants/eventTypes";
 
 const EVENT_FORM_STYLES = `
   .event-form-grid {
@@ -38,6 +39,16 @@ const EVENT_FORM_STYLES = `
     font-size: 14px;
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+
+  select.event-form-input {
+    appearance: auto;
+  }
+
+  /* Native option popups use browser colors; force readable contrast. */
+  .event-form-input option {
+    color: #0F172A;
+    background: #FFFFFF;
   }
 
   .event-form-input:focus,
@@ -312,6 +323,23 @@ function EventForm({
 
         <div className="event-form-row">
           <div className="event-form-field">
+            <label className="event-form-label" htmlFor="eventType">Event Type</label>
+            <select
+              id="eventType"
+              className="event-form-input"
+              value={values.eventType || ""}
+              onChange={(e) => onChange("eventType", e.target.value)}
+              required
+            >
+              <option value="">Select event type</option>
+              {EVENT_TYPE_OPTIONS.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+            {errors.eventType && <div className="event-form-error">{errors.eventType}</div>}
+          </div>
+
+          <div className="event-form-field">
             <label className="event-form-label" htmlFor="maxParticipants">Max Participants</label>
             <input
               id="maxParticipants"
@@ -325,6 +353,22 @@ function EventForm({
             />
             {errors.maxParticipants && <div className="event-form-error">{errors.maxParticipants}</div>}
           </div>
+
+          {values.eventType === "Other" && (
+            <div className="event-form-field">
+              <label className="event-form-label" htmlFor="customEventType">Custom Event Type</label>
+              <input
+                id="customEventType"
+                className="event-form-input"
+                type="text"
+                value={values.customEventType || ""}
+                onChange={(e) => onChange("customEventType", e.target.value)}
+                placeholder="Enter custom event type"
+                required
+              />
+              {errors.customEventType && <div className="event-form-error">{errors.customEventType}</div>}
+            </div>
+          )}
 
           <div className="event-form-field">
             <label className="event-form-label" htmlFor="poster">Event Poster</label>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiUrl } from "../constants/api";
 
 const EDIT_PROFILE_STYLES = `
   .edit-profile-overlay {
@@ -152,6 +153,7 @@ function EditProfile({ user, onClose, onSaved }) {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!user) return;
@@ -181,18 +183,26 @@ function EditProfile({ user, onClose, onSaved }) {
     setError("");
 
     try {
-      const response = await fetch(`/api/users/user/${user._id}`, {
+      const response = await fetch(apiUrl(`/api/users/user/${user._id}`), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get("content-type") || "";
+      const data = contentType.includes("application/json")
+        ? await response.json()
+        : null;
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to update profile");
+        throw new Error(data?.message || "Unable to update profile");
+      }
+
+      if (!data) {
+        throw new Error("Invalid profile update response from server");
       }
 
       if (onSaved) {

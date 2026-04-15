@@ -40,6 +40,12 @@ const eventSchema = new mongoose.Schema({
     type: String
   },
 
+  eventType: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+
   type: {
     type: String   // Technical, Workshop, Non-Technical
   },

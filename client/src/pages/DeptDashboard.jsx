@@ -5,6 +5,7 @@ import { useToast } from "../hooks/useToast";
 import CreateEvent from "../components/CreateEvent";
 import EventraLogo from "../components/EventraLogo";
 import { apiUrl, assetUrl } from "../constants/api";
+import { EVENT_TYPE_OPTIONS, isPredefinedEventType, resolveEventTypeValue } from "../constants/eventTypes";
 
 /* ─── Styles ────────────────────────────────────────────────────────────── */
 const STYLES = `
@@ -383,7 +384,7 @@ function DeptDashboard() {
   const [exportLoading, setExportLoading]   = useState(false);
   const [eventFilter, setEventFilter]       = useState("all");
 
-  const [form, setForm]           = useState({ title:"", description:"", date:"", venue:"", applyBy:"" });
+  const [form, setForm]           = useState({ title:"", description:"", date:"", venue:"", applyBy:"", eventType:"", customEventType:"" });
   const [file, setFile]           = useState(null);
   const [fileName, setFileName]   = useState("");
   const [formFields, setFormFields] = useState([]);
@@ -637,12 +638,22 @@ function DeptDashboard() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.applyBy && form.date && new Date(form.applyBy) > new Date(form.date)) { showToast("Apply By date cannot be after Event Date", "warning"); return; }
+    const resolvedEventType = form.eventType === "Other"
+      ? form.customEventType.trim()
+      : form.eventType.trim();
+
+    if (!resolvedEventType) {
+      showToast("Event Type is required", "warning");
+      return;
+    }
+
     setSaveLoading(true);
     try {
       const fd = new FormData();
       fd.append("title", form.title); fd.append("description", form.description);
       fd.append("date", form.date);   fd.append("venue", form.venue);
       fd.append("applyBy", form.applyBy); fd.append("department", dept);
+      fd.append("eventType", resolvedEventType);
       if (file) fd.append("poster", file);
       fd.append("formFields", JSON.stringify(formFields));
       if (editingEvent) {
@@ -651,7 +662,7 @@ function DeptDashboard() {
         await fetch(apiUrl("/api/events"), { method:"POST", body:fd });
       }
       setShowForm(false); setEditingEvent(null);
-      setForm({ title:"", description:"", date:"", venue:"", applyBy:"" });
+      setForm({ title:"", description:"", date:"", venue:"", applyBy:"", eventType:"", customEventType:"" });
       setFile(null); setFileName(""); setFormFields([]);
       fetchEvents();
     } finally { setSaveLoading(false); }
@@ -660,7 +671,18 @@ function DeptDashboard() {
   const handleEdit = (ev) => {
     setShowCreate(false);
     setEditingEvent(ev);
-    setForm({ title:ev.title, description:ev.description, date:ev.date.split("T")[0], venue:ev.venue, applyBy:ev.applyBy?ev.applyBy.split("T")[0]:"" });
+    const existingEventType = resolveEventTypeValue(ev);
+    const hasPredefinedType = isPredefinedEventType(existingEventType);
+
+    setForm({
+      title: ev.title,
+      description: ev.description,
+      date: ev.date.split("T")[0],
+      venue: ev.venue,
+      applyBy: ev.applyBy ? ev.applyBy.split("T")[0] : "",
+      eventType: hasPredefinedType ? existingEventType : "Other",
+      customEventType: hasPredefinedType ? "" : existingEventType,
+    });
     setFile(null); setFileName(""); setFormFields(ev.formFields||[]);
     setShowForm(true);
   };
@@ -777,6 +799,13 @@ function DeptDashboard() {
                     <div style={{ padding:"20px 20px 16px" }}>
                       {view==="all" && ev.department && <div className="dept-badge">{ev.department}</div>}
                       <h3 style={{ fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:17, color:"#E2E8F0", marginBottom:8, letterSpacing:"-0.01em", lineHeight:1.3 }}>{ev.title}</h3>
+                      {resolveEventTypeValue(ev) && (
+                        <div style={{ marginBottom: 8 }}>
+                          <span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, fontSize:11, fontFamily:"'Outfit',sans-serif", fontWeight:700, background:"rgba(99,102,241,0.18)", border:"1px solid rgba(99,102,241,0.34)", color:"#C4B5FD" }}>
+                            {resolveEventTypeValue(ev)}
+                          </span>
+                        </div>
+                      )}
                       <p style={{ color:"#64748B", fontSize:13, lineHeight:1.6, marginBottom:16, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{ev.description}</p>
 
                       <div style={{ display:"flex", flexDirection:"column", gap:7, marginBottom:18 }}>
@@ -869,6 +898,34 @@ function DeptDashboard() {
                     <div><label className="form-label">Apply By Date</label><input className="form-input" type="date" value={form.applyBy} onChange={e=>setForm({...form,applyBy:e.target.value})} style={{ colorScheme:"dark" }} /></div>
                   </div>
                   <div><label className="form-label">Venue</label><input className="form-input" placeholder="e.g. Main Auditorium" value={form.venue} onChange={e=>setForm({...form,venue:e.target.value})} /></div>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+                    <div>
+                      <label className="form-label">Event Type</label>
+                      <select
+                        className="form-input"
+                        value={form.eventType}
+                        onChange={e=>setForm((prev)=>({ ...prev, eventType:e.target.value, customEventType:e.target.value === "Other" ? prev.customEventType : "" }))}
+                        required
+                      >
+                        <option value="">Select event type</option>
+                        {EVENT_TYPE_OPTIONS.map((typeOption) => (
+                          <option key={typeOption} value={typeOption}>{typeOption}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {form.eventType === "Other" && (
+                      <div>
+                        <label className="form-label">Custom Event Type</label>
+                        <input
+                          className="form-input"
+                          placeholder="Enter custom event type"
+                          value={form.customEventType}
+                          onChange={e=>setForm({...form,customEventType:e.target.value})}
+                          required
+                        />
+                      </div>
+                    )}
+                  </div>
                   <div>
                     <label className="form-label">Event Poster</label>
                     <div style={{ position:"relative" }}>

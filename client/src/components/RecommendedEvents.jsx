@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import EventCard from "./EventCard";
+import { apiUrl } from "../constants/api";
 
 function RecommendedEvents({
   userId,
@@ -13,6 +14,7 @@ function RecommendedEvents({
 }) {
   const [recommendedEvents, setRecommendedEvents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!userId) return;
@@ -21,8 +23,10 @@ function RecommendedEvents({
       setLoading(true);
 
       try {
-        // Fetch recommended events when component loads
-        const response = await fetch(`/api/events/recommended/${userId}`);
+        // Fetch recommendations from participation-history endpoint
+        const response = await fetch(apiUrl(`/api/recommendations/${userId}`), {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
 
         if (!response.ok) {
           throw new Error("Recommendation API unavailable");
@@ -30,8 +34,24 @@ function RecommendedEvents({
 
         const payload = await response.json();
 
-        // Store recommended events in state
-        setRecommendedEvents(Array.isArray(payload) ? payload.slice(0, 5) : []);
+        // Normalize API response fields to EventCard contract.
+        const normalized = Array.isArray(payload)
+          ? payload.map((event) => ({
+              _id: event.eventId || event._id,
+              title: event.title,
+              department: event.department,
+              eventType: event.eventType || event.type,
+              type: event.eventType || event.type,
+              date: event.date,
+              poster: event.poster || "",
+              applyBy: event.applyBy || null,
+              venue: event.venue || "",
+              approvalStatus: "approved",
+              eventState: "active",
+            }))
+          : [];
+
+        setRecommendedEvents(normalized.slice(0, 5));
       } catch (error) {
         setRecommendedEvents([]);
       } finally {
@@ -40,7 +60,7 @@ function RecommendedEvents({
     };
 
     fetchRecommendedEvents();
-  }, [userId]);
+  }, [userId, token]);
 
   return (
     <section className="animate-fadeUp" style={{ marginBottom: 26 }}>

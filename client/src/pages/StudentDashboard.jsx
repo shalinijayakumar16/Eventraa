@@ -423,6 +423,16 @@ function StudentDashboard() {
     return [...new Set(events.map((event) => event.department).filter(Boolean))].sort();
   }, [events]);
 
+  const eventTypeOptions = useMemo(() => {
+    return [
+      ...new Set(
+        events
+          .map((event) => String(event.eventType || event.type || "").trim())
+          .filter(Boolean)
+      ),
+    ].sort((a, b) => a.localeCompare(b));
+  }, [events]);
+
   const matchesCommonFilters = useCallback((event) => {
     const matchesSearch = event.title?.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -430,11 +440,9 @@ function StudentDashboard() {
       ? event.department === selectedDepartment
       : true;
 
-    const normalizedType = String(event.type || "").toLowerCase();
+    const normalizedType = String(event.eventType || event.type || "").toLowerCase();
     const matchesType = selectedType
-      ? (selectedType === "Tech"
-          ? (normalizedType === "tech" || normalizedType === "technical")
-          : normalizedType === selectedType.toLowerCase())
+      ? normalizedType === selectedType.toLowerCase()
       : true;
 
     const eventDateKey = event.date ? new Date(event.date).toISOString().slice(0, 10) : "";
@@ -660,6 +668,7 @@ function StudentDashboard() {
                 setSelectedDepartment={setSelectedDepartment}
                 selectedType={selectedType}
                 setSelectedType={setSelectedType}
+                eventTypeOptions={eventTypeOptions}
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
                 departmentOptions={departmentOptions}

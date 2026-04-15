@@ -7,6 +7,7 @@ function SearchFilterBar({
   setSelectedDepartment,
   selectedType,
   setSelectedType,
+  eventTypeOptions,
   selectedDate,
   setSelectedDate,
   departmentOptions,
@@ -47,9 +48,9 @@ function SearchFilterBar({
           onChange={(event) => setSelectedType(event.target.value)}
         >
           <option value="">All Event Types</option>
-          <option value="Tech">Tech</option>
-          <option value="Cultural">Cultural</option>
-          <option value="Workshop">Workshop</option>
+          {eventTypeOptions.map((eventType) => (
+            <option key={eventType} value={eventType}>{eventType}</option>
+          ))}
         </select>
 
         <input

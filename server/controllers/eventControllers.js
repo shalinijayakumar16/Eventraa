@@ -7,6 +7,12 @@ const { getConflictingEvents } = require("../utils/eventClash");
 
 const DEFAULT_EVENT_DURATION_MS = 60 * 60 * 1000;
 
+const resolveEventType = (payload = {}) => {
+  const rawValue = payload.eventType ?? payload.type;
+  if (typeof rawValue !== "string") return "";
+  return rawValue.trim();
+};
+
 const toValidDate = (value) => {
   if (!value) return null;
   const date = new Date(value);
@@ -103,7 +109,9 @@ exports.getRecommendedEvents = async (req, res) => {
           ? [user.interest]
           : [];
 
-      if (event.type && userInterests.includes(event.type)) {
+      const normalizedEventType = event.eventType || event.type;
+
+      if (normalizedEventType && userInterests.includes(normalizedEventType)) {
         score += 2;
       }
 
@@ -138,9 +146,17 @@ exports.createEvent = async (req, res) => {
     }
 
     const deadline = req.body.deadline || req.body.applyBy;
+    const eventType = resolveEventType(req.body);
+
+    if (!eventType) {
+      return res.status(400).json({ message: "eventType is required" });
+    }
 
     const eventData = {
       ...req.body,
+      eventType,
+      // Keep legacy field aligned for older UI paths.
+      type: eventType,
       // New events require admin approval before being visible
       status: "pending",
       applyBy: deadline,
@@ -161,14 +177,20 @@ exports.createEvent = async (req, res) => {
 // ✅ GET ALL EVENTS
 exports.getAllEvents = async (req, res) => {
   try {
-    const { department, type, userId } = req.query;
+    const { department, type, eventType, userId } = req.query;
 
     let filter = {
       // Students should only see approved events
       status: "approved",
     };
     if (department) filter.department = department;
-    if (type) filter.type = type;
+    if (eventType || type) {
+      const normalizedType = String(eventType || type).trim();
+      filter.$or = [
+        { eventType: normalizedType },
+        { type: normalizedType },
+      ];
+    }
 
     const [events, registrations, certificates] = await Promise.all([
       Event.find(filter).sort({ date: 1 }),
@@ -332,6 +354,17 @@ exports.updateEvent = async (req, res) => {
   try {
     let updateData = { ...req.body };
 
+    if (Object.prototype.hasOwnProperty.call(req.body, "eventType") || Object.prototype.hasOwnProperty.call(req.body, "type")) {
+      const eventType = resolveEventType(req.body);
+      if (!eventType) {
+        return res.status(400).json({ message: "eventType must not be empty" });
+      }
+
+      updateData.eventType = eventType;
+      // Keep legacy field aligned for older UI paths.
+      updateData.type = eventType;
+    }
+
     if (req.body.deadline || req.body.applyBy) {
       updateData.applyBy = req.body.deadline || req.body.applyBy;
       updateData.deadline = req.body.deadline || req.body.applyBy;
@@ -356,7 +389,7 @@ exports.updateEvent = async (req, res) => {
     const updated = await Event.findByIdAndUpdate(
       req.params.id,
       updateData,
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     res.json(updated);

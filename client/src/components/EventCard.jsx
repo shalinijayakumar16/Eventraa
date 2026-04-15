@@ -17,6 +17,7 @@ function EventCard({
 }) {
   const [calendarAdded, setCalendarAdded] = useState(false);
   const calendarTimerRef = useRef(null);
+  const displayEventType = event.eventType || event.type || "Other";
 
   useEffect(() => {
     return () => {
@@ -29,7 +30,7 @@ function EventCard({
   // Hide unapproved events
   if (event.approvalStatus && event.approvalStatus !== "approved") return null;
 
-  const typeStyle = TYPE_STYLE[event.type] || TYPE_STYLE.default;
+  const typeStyle = TYPE_STYLE[displayEventType] || TYPE_STYLE.default;
   const isPast    = new Date(event.date) < new Date();
   const isCompleted = event.eventState === "completed";
   const isUnavailable = isPast || isCompleted;
@@ -92,7 +93,7 @@ function EventCard({
               <Icon name="check" size={10} color="#6EE7B7" /> Approved
             </span>
             <span className="badge-pill" style={{ background: typeStyle.bg, border: `1px solid ${typeStyle.border}`, color: typeStyle.color }}>
-              {event.type}
+              {displayEventType}
             </span>
 
             {/* Toggle wishlist status for this event */}

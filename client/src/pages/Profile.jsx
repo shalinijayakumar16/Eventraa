@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EditProfile from "../components/EditProfile";
+import { apiUrl } from "../constants/api";
 
 const DEFAULT_AVATAR = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
@@ -200,6 +201,7 @@ const PROFILE_STYLES = `
 function Profile() {
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -217,11 +219,21 @@ function Profile() {
       setLoading(true);
       setError("");
 
-      const response = await fetch(`/api/users/user/${userId}`);
-      const data = await response.json();
+      const response = await fetch(apiUrl(`/api/users/user/${userId}`), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      const contentType = response.headers.get("content-type") || "";
+      const data = contentType.includes("application/json")
+        ? await response.json()
+        : null;
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to load profile");
+        throw new Error(data?.message || "Unable to load profile");
+      }
+
+      if (!data) {
+        throw new Error("Invalid profile response from server");
       }
 
       setUser(data);
@@ -234,7 +246,7 @@ function Profile() {
 
   useEffect(() => {
     fetchUser();
-  }, [userId]);
+  }, [userId, token]);
 
   const handleSaved = (updatedUser) => {
     setUser(updatedUser);

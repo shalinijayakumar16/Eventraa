@@ -122,6 +122,8 @@ const buildInitialForm = (department) => ({
   date: "",
   venue: "",
   department: department || "",
+  eventType: "",
+  customEventType: "",
   maxParticipants: "",
   deadline: "",
   poster: null,
@@ -143,7 +145,13 @@ function CreateEvent({ open, onClose, onCreated, department }) {
   }, [open, defaultDepartment]);
 
   const handleChange = (field, value) => {
-    setForm((previous) => ({ ...previous, [field]: value }));
+    setForm((previous) => {
+      if (field === "eventType" && value !== "Other") {
+        return { ...previous, eventType: value, customEventType: "" };
+      }
+
+      return { ...previous, [field]: value };
+    });
   };
 
   const handleFileChange = (file) => {
@@ -153,9 +161,18 @@ function CreateEvent({ open, onClose, onCreated, department }) {
   const validate = () => {
     const nextErrors = {};
 
+    const resolvedEventType = form.eventType === "Other"
+      ? form.customEventType.trim()
+      : form.eventType.trim();
+
     if (!form.title.trim()) nextErrors.title = "Event title is required.";
     if (!form.date) nextErrors.date = "Event date is required.";
     if (!form.deadline) nextErrors.deadline = "Registration deadline is required.";
+    if (!form.eventType.trim()) nextErrors.eventType = "Event type is required.";
+    if (form.eventType === "Other" && !form.customEventType.trim()) {
+      nextErrors.customEventType = "Please enter a custom event type.";
+    }
+    if (!resolvedEventType) nextErrors.eventType = "Event type is required.";
 
     const maxParticipants = Number(form.maxParticipants);
     if (!Number.isFinite(maxParticipants) || maxParticipants <= 0) {
@@ -187,11 +204,16 @@ function CreateEvent({ open, onClose, onCreated, department }) {
     setSuccess("");
 
     try {
+      const resolvedEventType = form.eventType === "Other"
+        ? form.customEventType.trim()
+        : form.eventType.trim();
+
       const payload = new FormData();
       payload.append("title", form.title.trim());
       payload.append("description", form.description.trim());
       payload.append("date", form.date);
       payload.append("venue", form.venue.trim());
+      payload.append("eventType", resolvedEventType);
       payload.append("department", form.department || defaultDepartment);
       payload.append("maxParticipants", String(form.maxParticipants));
       payload.append("deadline", form.deadline);
