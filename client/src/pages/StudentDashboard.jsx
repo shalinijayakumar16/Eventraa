@@ -122,10 +122,40 @@ function StudentDashboard() {
       const res  = await fetch(apiUrl("/api/registrations/my-events"), {
         headers: getAuthHeaders(),
       });
-      if (!res.ok) throw new Error("Unable to fetch registrations");
-      const data = await res.json();
-      console.log("[StudentDashboard] my-events API response:", data);
-      setMyEvents(Array.isArray(data) ? data : []);
+      if (res.ok) {
+        const data = await res.json();
+        console.log("[StudentDashboard] my-events API response:", data);
+        setMyEvents(Array.isArray(data) ? data : []);
+        return;
+      }
+
+      // Fallback path: derive registered events from public events API using userId.
+      if (userId) {
+        const fallbackRes = await fetch(`${apiUrl("/api/events")}?userId=${userId}`);
+
+        if (fallbackRes.ok) {
+          const payload = await fallbackRes.json();
+          const list = Array.isArray(payload)
+            ? payload
+            : [...(payload.active || []), ...(payload.completed || payload.expired || [])];
+
+          const fallbackRegistrations = list
+            .filter((event) => event?.isRegistered)
+            .map((event) => ({
+              _id: `fallback-${event._id}`,
+              eventId: event,
+              attendance: "registered",
+              attended: false,
+              certificateGenerated: false,
+              certificateUrl: "",
+            }));
+
+          setMyEvents(fallbackRegistrations);
+          return;
+        }
+      }
+
+      throw new Error("Unable to fetch registrations");
     } catch (err) { console.log(err); setMyEvents([]); }
   };
 
