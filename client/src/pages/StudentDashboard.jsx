@@ -63,6 +63,11 @@ function StudentDashboard() {
   const [externalEvents, setExternalEvents] = useState([]);
   const [externalEventsLoading, setExternalEventsLoading] = useState(false);
 
+  // ✅ NEW: Government events state
+  // This supports a dedicated tab so students can discover public/government opportunities.
+  const [govEvents, setGovEvents] = useState([]);
+  const [govEventsLoading, setGovEventsLoading] = useState(false);
+
   // Tabs + filters + search
   const [activeTab, setActiveTab]   = useState("all");
 
@@ -102,6 +107,14 @@ function StudentDashboard() {
   useEffect(() => {
     if (viewMode === "externalEvents") {
       fetchExternalEvents();
+    }
+  }, [viewMode]);
+
+  // ✅ NEW: Load government events only when the Government tab is opened.
+  // This keeps existing dashboard behavior unchanged and avoids unnecessary API calls.
+  useEffect(() => {
+    if (viewMode === "govEvents") {
+      fetchGovEvents();
     }
   }, [viewMode]);
 
@@ -274,6 +287,27 @@ function StudentDashboard() {
       setExternalEvents([]);
     } finally {
       setExternalEventsLoading(false);
+    }
+  };
+
+  // ✅ NEW: Fetch government events from backend API.
+  // The response is mapped to existing EventCard-friendly shape later for UI reuse.
+  const fetchGovEvents = async () => {
+    try {
+      setGovEventsLoading(true);
+      const response = await fetch(apiUrl("/api/gov-events"));
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch government events");
+      }
+
+      const data = await response.json();
+      setGovEvents(Array.isArray(data?.data) ? data.data : []);
+    } catch (error) {
+      console.error("Error fetching government events:", error);
+      setGovEvents([]);
+    } finally {
+      setGovEventsLoading(false);
     }
   };
 
@@ -547,6 +581,30 @@ function StudentDashboard() {
     wishlist:   wishlistIds.length,
   };
 
+  // ✅ NEW: Convert government events into existing EventCard data shape.
+  // This lets us reuse the current EventsGrid/EventCard UI without creating a new design.
+  const govEventsForGrid = useMemo(() => {
+    return govEvents.map((event) => ({
+      ...event,
+      _id: String(event._id),
+      department: "Government",
+      eventType: "Government",
+      venue: event.source || "Government",
+      applyBy: event.date,
+      date: event.date || new Date().toISOString(),
+    }));
+  }, [govEvents]);
+
+  // ✅ NEW: Register action for government events opens external registration URL.
+  const handleOpenGovRegistration = useCallback((event) => {
+    if (!event?.registration_link) {
+      showToast("Registration link is unavailable for this government event.", "warning");
+      return;
+    }
+
+    window.open(event.registration_link, "_blank", "noopener,noreferrer");
+  }, [showToast]);
+
   /* ── Handlers passed down ──────────────────────────────────────────────── */
   const handleOpenRegister = useCallback(async (event) => {
     if (!event?._id) return;
@@ -798,6 +856,40 @@ function StudentDashboard() {
                   }}
                 >
                   🌍 Other College Events
+                </button>
+
+                {/* Tab 3: Government Events */}
+                <button
+                  onClick={() => setViewMode("govEvents")}
+                  style={{
+                    flex: 1,
+                    padding: "16px 20px",
+                    border: "none",
+                    background: "transparent",
+                    color: viewMode === "govEvents" ? "#E2E8F0" : "#64748B",
+                    fontFamily: "'Outfit', sans-serif",
+                    fontSize: 15,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    borderBottom: viewMode === "govEvents" ? "2px solid #6366F1" : "none",
+                    transition: "all 0.22s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (viewMode !== "govEvents") {
+                      e.currentTarget.style.color = "#E2E8F0";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (viewMode !== "govEvents") {
+                      e.currentTarget.style.color = "#64748B";
+                    }
+                  }}
+                >
+                  🏛️ Government Events
                 </button>
               </div>
             </div>
@@ -1151,6 +1243,57 @@ function StudentDashboard() {
                     50% { opacity: 0.5; }
                   }
                 `}</style>
+              </div>
+            )}
+
+            {/* ✅ NEW: Government events tab content */}
+            {viewMode === "govEvents" && (
+              <div style={{ marginTop: 24 }}>
+                <h2
+                  style={{
+                    margin: "0 0 12px",
+                    color: "#E2E8F0",
+                    fontFamily: "'Outfit', sans-serif",
+                    letterSpacing: "-0.01em",
+                    fontSize: 20,
+                  }}
+                >
+                  🏛️ Government Events
+                </h2>
+                <p style={{ margin: "0 0 16px", color: "#64748B", fontSize: 13 }}>
+                  Curated public-sector opportunities for students.
+                </p>
+
+                {govEventsLoading ? (
+                  <div style={{ color: "#94A3B8", fontSize: 14 }}>Loading government events...</div>
+                ) : govEventsForGrid.length === 0 ? (
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: "16px 18px",
+                      border: "1px solid rgba(99,102,241,0.2)",
+                      borderRadius: 12,
+                      background: "rgba(99,102,241,0.06)",
+                      color: "#94A3B8",
+                      fontSize: 14,
+                    }}
+                  >
+                    No government events available
+                  </div>
+                ) : (
+                  <EventsGrid
+                    events={govEventsForGrid}
+                    registeredIds={new Set()}
+                    registrationMetaByEventId={{}}
+                    activeTab={activeTab}
+                    onDetails={handleOpenDetails}
+                    onRegister={handleOpenGovRegistration}
+                    onAddToCalendar={handleAddToCalendar}
+                    wishlistIds={[]}
+                    wishlistLoadingMap={{}}
+                    onToggleWishlist={() => {}}
+                  />
+                )}
               </div>
             )}
           </main>
