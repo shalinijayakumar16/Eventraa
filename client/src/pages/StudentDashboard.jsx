@@ -54,20 +54,6 @@ function StudentDashboard() {
     conflictingEvents: [],
   });
 
-  // ✅ NEW: View mode tabs (My College Events vs Other College Events)
-  // Controls which section to display: "myEvents" (default) or "externalEvents"
-  const [viewMode, setViewMode] = useState("myEvents");
-  
-  // ✅ NEW: External events state
-  // Stores events from other colleges and loading state
-  const [externalEvents, setExternalEvents] = useState([]);
-  const [externalEventsLoading, setExternalEventsLoading] = useState(false);
-
-  // ✅ NEW: Government events state
-  // This supports a dedicated tab so students can discover public/government opportunities.
-  const [govEvents, setGovEvents] = useState([]);
-  const [govEventsLoading, setGovEventsLoading] = useState(false);
-
   // Tabs + filters + search
   const [activeTab, setActiveTab]   = useState("all");
 
@@ -101,22 +87,6 @@ function StudentDashboard() {
 
     return () => clearInterval(timer);
   }, [userId, token]);
-
-  // ✅ NEW: Fetch external events when "Other College Events" tab is opened
-  // Optimization: only fetch when viewMode changes to "externalEvents"
-  useEffect(() => {
-    if (viewMode === "externalEvents") {
-      fetchExternalEvents();
-    }
-  }, [viewMode]);
-
-  // ✅ NEW: Load government events only when the Government tab is opened.
-  // This keeps existing dashboard behavior unchanged and avoids unnecessary API calls.
-  useEffect(() => {
-    if (viewMode === "govEvents") {
-      fetchGovEvents();
-    }
-  }, [viewMode]);
 
   /* ── API calls ─────────────────────────────────────────────────────────── */
   const fetchEvents = async () => {
@@ -261,55 +231,6 @@ function StudentDashboard() {
       // Keep existing state if API is unavailable
     }
   }, [userId, getAuthHeaders]);
-
-  // ✅ NEW: Fetch external events from other colleges
-  // Called when user switches to "Other College Events" tab
-  // Fetches up to 50 upcoming events sorted by date
-  const fetchExternalEvents = async () => {
-    try {
-      setExternalEventsLoading(true);
-      const response = await fetch(`${apiUrl("/api/external-events")}?limit=50&sort=asc`);
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch external events");
-      }
-
-      const data = await response.json();
-      
-      // Extract events array from API response
-      if (data.success && data.data) {
-        setExternalEvents(data.data);
-      } else {
-        setExternalEvents([]);
-      }
-    } catch (error) {
-      console.error("Error fetching external events:", error);
-      setExternalEvents([]);
-    } finally {
-      setExternalEventsLoading(false);
-    }
-  };
-
-  // ✅ NEW: Fetch government events from backend API.
-  // The response is mapped to existing EventCard-friendly shape later for UI reuse.
-  const fetchGovEvents = async () => {
-    try {
-      setGovEventsLoading(true);
-      const response = await fetch(apiUrl("/api/gov-events"));
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch government events");
-      }
-
-      const data = await response.json();
-      setGovEvents(Array.isArray(data?.data) ? data.data : []);
-    } catch (error) {
-      console.error("Error fetching government events:", error);
-      setGovEvents([]);
-    } finally {
-      setGovEventsLoading(false);
-    }
-  };
 
   const handleToggleWishlist = useCallback(async (eventId) => {
     if (!eventId) return;
@@ -581,30 +502,6 @@ function StudentDashboard() {
     wishlist:   wishlistIds.length,
   };
 
-  // ✅ NEW: Convert government events into existing EventCard data shape.
-  // This lets us reuse the current EventsGrid/EventCard UI without creating a new design.
-  const govEventsForGrid = useMemo(() => {
-    return govEvents.map((event) => ({
-      ...event,
-      _id: String(event._id),
-      department: "Government",
-      eventType: "Government",
-      venue: event.source || "Government",
-      applyBy: event.date,
-      date: event.date || new Date().toISOString(),
-    }));
-  }, [govEvents]);
-
-  // ✅ NEW: Register action for government events opens external registration URL.
-  const handleOpenGovRegistration = useCallback((event) => {
-    if (!event?.registration_link) {
-      showToast("Registration link is unavailable for this government event.", "warning");
-      return;
-    }
-
-    window.open(event.registration_link, "_blank", "noopener,noreferrer");
-  }, [showToast]);
-
   /* ── Handlers passed down ──────────────────────────────────────────────── */
   const handleOpenRegister = useCallback(async (event) => {
     if (!event?._id) return;
@@ -787,515 +684,62 @@ function StudentDashboard() {
               onAddToCalendar={handleAddToCalendar}
             />
 
-            {/* ✅ NEW: Tab navigation for "My College Events" vs "Other College Events" */}
-            <div className="animate-fadeUp" style={{ marginTop: 32, marginBottom: 24 }}>
-              <div style={{ display: "flex", gap: 12, borderBottom: "1px solid rgba(99,102,241,0.15)", paddingBottom: 0 }}>
-                {/* Tab 1: My College Events */}
-                <button
-                  onClick={() => setViewMode("myEvents")}
-                  style={{
-                    flex: 1,
-                    padding: "16px 20px",
-                    border: "none",
-                    background: "transparent",
-                    color: viewMode === "myEvents" ? "#E2E8F0" : "#64748B",
-                    fontFamily: "'Outfit', sans-serif",
-                    fontSize: 15,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    borderBottom: viewMode === "myEvents" ? "2px solid #6366F1" : "none",
-                    transition: "all 0.22s ease",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (viewMode !== "myEvents") {
-                      e.currentTarget.style.color = "#E2E8F0";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (viewMode !== "myEvents") {
-                      e.currentTarget.style.color = "#64748B";
-                    }
-                  }}
-                >
-                  🎓 My College Events
-                </button>
+            <div className="animate-fadeUp" style={{ marginTop: 20 }}>
+              <TabBar
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                tabCounts={tabCounts}
+              />
 
-                {/* Tab 2: Other College Events */}
-                <button
-                  onClick={() => setViewMode("externalEvents")}
-                  style={{
-                    flex: 1,
-                    padding: "16px 20px",
-                    border: "none",
-                    background: "transparent",
-                    color: viewMode === "externalEvents" ? "#E2E8F0" : "#64748B",
-                    fontFamily: "'Outfit', sans-serif",
-                    fontSize: 15,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    borderBottom: viewMode === "externalEvents" ? "2px solid #6366F1" : "none",
-                    transition: "all 0.22s ease",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (viewMode !== "externalEvents") {
-                      e.currentTarget.style.color = "#E2E8F0";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (viewMode !== "externalEvents") {
-                      e.currentTarget.style.color = "#64748B";
-                    }
-                  }}
-                >
-                  🌍 Other College Events
-                </button>
+              {activeTab !== "wishlist" && (
+                <SearchFilterBar
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  selectedDepartment={selectedDepartment}
+                  setSelectedDepartment={setSelectedDepartment}
+                  selectedType={selectedType}
+                  setSelectedType={setSelectedType}
+                  eventTypeOptions={eventTypeOptions}
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  departmentOptions={departmentOptions}
+                  filteredCount={filteredEvents.length}
+                  onClearFilters={handleClearFilters}
+                />
+              )}
 
-                {/* Tab 3: Government Events */}
-                <button
-                  onClick={() => setViewMode("govEvents")}
-                  style={{
-                    flex: 1,
-                    padding: "16px 20px",
-                    border: "none",
-                    background: "transparent",
-                    color: viewMode === "govEvents" ? "#E2E8F0" : "#64748B",
-                    fontFamily: "'Outfit', sans-serif",
-                    fontSize: 15,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    borderBottom: viewMode === "govEvents" ? "2px solid #6366F1" : "none",
-                    transition: "all 0.22s ease",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 8,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (viewMode !== "govEvents") {
-                      e.currentTarget.style.color = "#E2E8F0";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (viewMode !== "govEvents") {
-                      e.currentTarget.style.color = "#64748B";
-                    }
-                  }}
-                >
-                  🏛️ Government Events
-                </button>
-              </div>
+              {activeTab === "wishlist" ? (
+                <WishlistPage
+                  active={activeTab === "wishlist"}
+                  userId={userId}
+                  allEvents={events}
+                  wishlistIds={wishlistIds}
+                  wishlistLoadingMap={wishlistLoadingMap}
+                  registeredIds={registeredIds}
+                  onDetails={handleOpenDetails}
+                  onRegister={handleOpenRegister}
+                  onAddToCalendar={handleAddToCalendar}
+                  onToggleWishlist={handleToggleWishlist}
+                />
+              ) : activeTab === "completed" ? (
+                renderEventSection("Completed Events", "Events that have ended or already have certificates generated for you.", filteredCompletedEvents)
+              ) : activeTab === "upcoming" ? (
+                renderEventSection("Active Events", "Browse events that are still open for participation.", filteredActiveEvents)
+              ) : activeTab === "registered" ? (
+                renderEventSection(
+                  "Your Registered Events",
+                  "Events you registered for, split across active and completed status.",
+                  filteredEvents.filter((event) => registeredIds.has(event._id))
+                )
+              ) : (
+                <>
+                  {renderEventSection("Active Events", "Browse events that are still open for participation.", filteredActiveEvents)}
+                  <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "8px 0 20px" }} />
+                  {renderEventSection("Completed Events", "Ended events and events already completed via certificate.", filteredCompletedEvents)}
+                </>
+              )}
             </div>
 
-            {/* ✅ Conditional rendering: Show My College Events by default */}
-            {viewMode === "myEvents" && (
-              <>
-                <TabBar
-                  activeTab={activeTab}
-                  onTabChange={setActiveTab}
-                  tabCounts={tabCounts}
-                />
-
-                {activeTab !== "wishlist" && (
-                  <SearchFilterBar
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    selectedDepartment={selectedDepartment}
-                setSelectedDepartment={setSelectedDepartment}
-                selectedType={selectedType}
-                setSelectedType={setSelectedType}
-                eventTypeOptions={eventTypeOptions}
-                selectedDate={selectedDate}
-                setSelectedDate={setSelectedDate}
-                departmentOptions={departmentOptions}
-                filteredCount={filteredEvents.length}
-                onClearFilters={handleClearFilters}
-              />
-            )}
-
-            {activeTab === "wishlist" ? (
-              <WishlistPage
-                active={activeTab === "wishlist"}
-                userId={userId}
-                allEvents={events}
-                wishlistIds={wishlistIds}
-                wishlistLoadingMap={wishlistLoadingMap}
-                registeredIds={registeredIds}
-                onDetails={handleOpenDetails}
-                onRegister={handleOpenRegister}
-                onAddToCalendar={handleAddToCalendar}
-                onToggleWishlist={handleToggleWishlist}
-              />
-            ) : activeTab === "completed" ? (
-              renderEventSection("Completed Events", "Events that have ended or already have certificates generated for you.", filteredCompletedEvents)
-            ) : activeTab === "upcoming" ? (
-              renderEventSection("Active Events", "Browse events that are still open for participation.", filteredActiveEvents)
-            ) : activeTab === "registered" ? (
-              renderEventSection(
-                "Your Registered Events",
-                "Events you registered for, split across active and completed status.",
-                filteredEvents.filter((event) => registeredIds.has(event._id))
-              )
-            ) : (
-              <>
-                {renderEventSection("Active Events", "Browse events that are still open for participation.", filteredActiveEvents)}
-                <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "8px 0 20px" }} />
-                {renderEventSection("Completed Events", "Ended events and events already completed via certificate.", filteredCompletedEvents)}
-              </>
-            )}
-              </>
-            )}
-
-            {/* ✅ Conditional rendering: Show Other College Events when tab is selected */}
-            {viewMode === "externalEvents" && (
-              <div>
-                {/* Loading state with skeleton cards */}
-                {externalEventsLoading && (
-                  <div style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                    gap: 16,
-                    marginTop: 24,
-                  }}>
-                    {[1, 2, 3, 4].map((i) => (
-                      <div
-                        key={i}
-                        style={{
-                          height: 320,
-                          background: "rgba(99,102,241,0.1)",
-                          borderRadius: 14,
-                          border: "1px solid rgba(99,102,241,0.2)",
-                          animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                {/* Events grid or empty state */}
-                {!externalEventsLoading && (
-                  <>
-                    {externalEvents && externalEvents.length > 0 ? (
-                      <div>
-                        {/* Section header */}
-                        <div style={{
-                          marginTop: 24,
-                          marginBottom: 20,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                        }}>
-                          <h2 style={{
-                            fontFamily: "'Outfit', sans-serif",
-                            fontSize: 18,
-                            fontWeight: 700,
-                            color: "#E2E8F0",
-                            letterSpacing: "-0.01em",
-                            margin: 0,
-                          }}>
-                            Events from Other Colleges
-                          </h2>
-                          {/* Event count badge */}
-                          <span style={{
-                            marginLeft: "auto",
-                            padding: "4px 12px",
-                            borderRadius: 20,
-                            background: "rgba(99,102,241,0.15)",
-                            fontSize: 12,
-                            color: "#A5B4FC",
-                            fontWeight: 600,
-                            border: "1px solid rgba(99,102,241,0.25)",
-                          }}>
-                            {externalEvents.length}
-                          </span>
-                        </div>
-
-                        {/* Events grid - responsive layout */}
-                        <div style={{
-                          display: "grid",
-                          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                          gap: 16,
-                        }}>
-                          {/* Render each external event as a card */}
-                          {externalEvents.map((event) => {
-                            const isPast = new Date(event.date) < new Date();
-                            const formattedDate = new Date(event.date).toLocaleDateString("en-IN", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            });
-
-                            return (
-                              <div
-                                key={event._id}
-                                style={{
-                                  background: "rgba(15,17,41,0.8)",
-                                  border: "1px solid rgba(99,102,241,0.25)",
-                                  borderRadius: 14,
-                                  overflow: "hidden",
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  height: "100%",
-                                  transition: "all 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
-                                  backdropFilter: "blur(8px)",
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.borderColor = "rgba(99,102,241,0.45)";
-                                  e.currentTarget.style.background = "rgba(20,23,55,0.9)";
-                                  e.currentTarget.style.boxShadow = "0 8px 24px rgba(99,102,241,0.15)";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.borderColor = "rgba(99,102,241,0.25)";
-                                  e.currentTarget.style.background = "rgba(15,17,41,0.8)";
-                                  e.currentTarget.style.boxShadow = "none";
-                                }}
-                              >
-                                {/* Header with gradient background */}
-                                <div style={{
-                                  background: "linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08))",
-                                  padding: "14px 16px",
-                                  borderBottom: "1px solid rgba(99,102,241,0.15)",
-                                  display: "flex",
-                                  alignItems: "flex-start",
-                                  justifyContent: "space-between",
-                                  gap: 8,
-                                }}>
-                                  <h3 style={{
-                                    fontFamily: "'Outfit', sans-serif",
-                                    fontWeight: 700,
-                                    fontSize: 15,
-                                    color: "#E2E8F0",
-                                    letterSpacing: "-0.01em",
-                                    lineHeight: 1.3,
-                                    flex: 1,
-                                    margin: 0,
-                                  }}>
-                                    {event.title}
-                                  </h3>
-
-                                  {/* Past event badge */}
-                                  {isPast && (
-                                    <div style={{
-                                      padding: "3px 10px",
-                                      borderRadius: 999,
-                                      background: "rgba(148,51,209,0.15)",
-                                      fontSize: 11,
-                                      color: "#D8B4FE",
-                                      fontFamily: "'Outfit', sans-serif",
-                                      fontWeight: 600,
-                                      border: "1px solid rgba(168,85,247,0.3)",
-                                      whiteSpace: "nowrap",
-                                      flexShrink: 0,
-                                    }}>
-                                      Past
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Card body with event details */}
-                                <div style={{
-                                  padding: "16px",
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  gap: 12,
-                                  flex: 1,
-                                }}>
-                                  {/* College name */}
-                                  <div style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                    color: "#94A3B8",
-                                    fontSize: 13,
-                                  }}>
-                                    <span style={{ fontWeight: 500 }}>🏫 {event.college_name}</span>
-                                  </div>
-
-                                  {/* Event date */}
-                                  <div style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                    color: "#94A3B8",
-                                    fontSize: 13,
-                                  }}>
-                                    📅 {formattedDate}
-                                  </div>
-
-                                  {/* Event source */}
-                                  {event.source && (
-                                    <div style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 8,
-                                      color: "#94A3B8",
-                                      fontSize: 13,
-                                    }}>
-                                      🔗 {event.source}
-                                    </div>
-                                  )}
-
-                                  {/* Event description */}
-                                  {event.description && (
-                                    <p style={{
-                                      fontSize: 12,
-                                      color: "#CBD5E1",
-                                      lineHeight: 1.5,
-                                      marginTop: 4,
-                                      display: "-webkit-box",
-                                      WebkitLineClamp: 3,
-                                      WebkitBoxOrient: "vertical",
-                                      overflow: "hidden",
-                                      margin: "4px 0 0",
-                                    }}>
-                                      {event.description}
-                                    </p>
-                                  )}
-                                </div>
-
-                                {/* Register button */}
-                                <div style={{
-                                  padding: "12px 16px",
-                                  borderTop: "1px solid rgba(99,102,241,0.15)",
-                                }}>
-                                  <button
-                                    onClick={() => {
-                                      if (event.registration_link) {
-                                        window.open(event.registration_link, "_blank", "noopener,noreferrer");
-                                      }
-                                    }}
-                                    disabled={isPast}
-                                    style={{
-                                      width: "100%",
-                                      padding: "10px 16px",
-                                      borderRadius: 10,
-                                      border: "none",
-                                      background: isPast 
-                                        ? "rgba(99,102,241,0.1)" 
-                                        : "linear-gradient(135deg, rgba(99,102,241,0.8), rgba(168,85,247,0.8))",
-                                      color: isPast ? "#64748B" : "#F0F4F8",
-                                      fontSize: 13,
-                                      fontWeight: 600,
-                                      fontFamily: "'Outfit', sans-serif",
-                                      cursor: isPast ? "not-allowed" : "pointer",
-                                      transition: "all 0.22s ease",
-                                      opacity: isPast ? 0.6 : 1,
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      if (!isPast) {
-                                        e.currentTarget.style.background = "linear-gradient(135deg, rgba(99,102,241,0.95), rgba(168,85,247,0.95))";
-                                        e.currentTarget.style.transform = "translateY(-2px)";
-                                        e.currentTarget.style.boxShadow = "0 8px 16px rgba(99,102,241,0.25)";
-                                      }
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      if (!isPast) {
-                                        e.currentTarget.style.background = "linear-gradient(135deg, rgba(99,102,241,0.8), rgba(168,85,247,0.8))";
-                                        e.currentTarget.style.transform = "translateY(0)";
-                                        e.currentTarget.style.boxShadow = "none";
-                                      }
-                                    }}
-                                  >
-                                    {isPast ? "🔒 Closed" : "🔗 Register"}
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ) : (
-                      /* Empty state - no external events */
-                      <div style={{
-                        marginTop: 32,
-                        padding: "32px 20px",
-                        textAlign: "center",
-                        border: "1px solid rgba(99,102,241,0.15)",
-                        borderRadius: 14,
-                        background: "rgba(99,102,241,0.05)",
-                      }}>
-                        <div style={{
-                          color: "#94A3B8",
-                          fontSize: 14,
-                          lineHeight: 1.6,
-                        }}>
-                          <p style={{ fontSize: 28, margin: "0 0 12px" }}>📭</p>
-                          <p style={{ margin: 0, fontWeight: 500 }}>No external events available</p>
-                          <p style={{ fontSize: 12, marginTop: 8, color: "#64748B", margin: "8px 0 0" }}>
-                            Check back soon for exciting opportunities from other colleges!
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                <style>{`
-                  @keyframes pulse {
-                    0%, 100% { opacity: 1; }
-                    50% { opacity: 0.5; }
-                  }
-                `}</style>
-              </div>
-            )}
-
-            {/* ✅ NEW: Government events tab content */}
-            {viewMode === "govEvents" && (
-              <div style={{ marginTop: 24 }}>
-                <h2
-                  style={{
-                    margin: "0 0 12px",
-                    color: "#E2E8F0",
-                    fontFamily: "'Outfit', sans-serif",
-                    letterSpacing: "-0.01em",
-                    fontSize: 20,
-                  }}
-                >
-                  🏛️ Government Events
-                </h2>
-                <p style={{ margin: "0 0 16px", color: "#64748B", fontSize: 13 }}>
-                  Curated public-sector opportunities for students.
-                </p>
-
-                {govEventsLoading ? (
-                  <div style={{ color: "#94A3B8", fontSize: 14 }}>Loading government events...</div>
-                ) : govEventsForGrid.length === 0 ? (
-                  <div
-                    style={{
-                      marginTop: 12,
-                      padding: "16px 18px",
-                      border: "1px solid rgba(99,102,241,0.2)",
-                      borderRadius: 12,
-                      background: "rgba(99,102,241,0.06)",
-                      color: "#94A3B8",
-                      fontSize: 14,
-                    }}
-                  >
-                    No government events available
-                  </div>
-                ) : (
-                  <EventsGrid
-                    events={govEventsForGrid}
-                    registeredIds={new Set()}
-                    registrationMetaByEventId={{}}
-                    activeTab={activeTab}
-                    onDetails={handleOpenDetails}
-                    onRegister={handleOpenGovRegistration}
-                    onAddToCalendar={handleAddToCalendar}
-                    wishlistIds={[]}
-                    wishlistLoadingMap={{}}
-                    onToggleWishlist={() => {}}
-                  />
-                )}
-              </div>
-            )}
           </main>
         </div>
 

@@ -4,8 +4,6 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const Event = require("./models/Event");
 const registrationRoutes = require("./routes/registrationRoutes");
-const { startDevfolioScheduler } = require("./scheduler/devfolioScheduler");
-const govEventRoutes = require("./routes/govEvents");
 
 
 dotenv.config();
@@ -35,10 +33,6 @@ app.use("/api/certificates", require("./routes/certificateRoutes"));
 app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 app.use("/api/student", require("./routes/studentRoutes"));
 app.use("/api/recommendations", require("./routes/recommendationRoutes"));
-// ✅ NEW: External Events from other colleges
-app.use("/api/external-events", require("./routes/externalEventRoutes"));
-// ✅ NEW: Government events route for student dashboard tab
-app.use("/api/gov-events", govEventRoutes);
 
 const normalizeLegacyEventStatuses = async () => {
   try {
@@ -53,10 +47,6 @@ const normalizeLegacyEventStatuses = async () => {
 };
 
 normalizeLegacyEventStatuses();
-
-// Start daily scraper schedule for Devfolio external events.
-// This is additive and does not modify existing API behavior.
-startDevfolioScheduler();
 
 // Test route
 app.get("/", (req, res) => {
