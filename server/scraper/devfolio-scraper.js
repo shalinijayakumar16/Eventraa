@@ -1,57 +1,58 @@
 const puppeteer = require("puppeteer");
 const mongoose = require("mongoose");
+const cron = require("node-cron");
 const ExternalEvent = require("../models/ExternalEvent");
 
-(async () => {
+// 🔥 MAIN SCRAPER FUNCTION
+async function scrapeDevfolio() {
   try {
-    // ✅ CONNECT TO DB (inside async)
+    console.log("\n🚀 Starting Devfolio Scraper...");
+
     await mongoose.connect("mongodb+srv://eventraUser:eventraAdmin@eventradb.zvbhvaa.mongodb.net/eventradb");
     console.log("MongoDB connected ✅");
 
     const browser = await puppeteer.launch({
-      headless: false,
+      headless: true, // 🔥 make true for cron
       defaultViewport: null
     });
 
     const page = await browser.newPage();
 
-    console.log("Opening Devfolio...");
     await page.goto("https://devfolio.co/hackathons", {
       waitUntil: "networkidle2"
     });
 
-    // Scroll to load all events
     await autoScroll(page);
 
-    console.log("Extracting event list...");
-
-    // Extract event links
     let events = await page.evaluate(() => {
       const data = [];
 
-      document.querySelectorAll("a").forEach(el => {
-        const link = el.href;
-        const title = el.innerText.trim();
+document.querySelectorAll("a").forEach(el => {
+  const link = el.href;
+  const title = el.querySelector("h3, h2")?.innerText?.trim();
 
-        if (link.includes(".devfolio.co") && title.length > 5) {
-          data.push({ title, link });
-        }
-      });
+  if (
+    link.includes(".devfolio.co") &&
+    title &&
+    title.length > 5
+  ) {
+    data.push({ title, link });
+  }
+});
 
       return data;
     });
 
-    // Remove duplicates
     const uniqueEvents = Array.from(
       new Map(events.map(e => [e.link, e])).values()
     );
 
-    console.log("Total clean events:", uniqueEvents.length);
+    console.log("Total events found:", uniqueEvents.length);
 
-    const detailedEvents = [];
+    // 🔥 LIMIT (latest 20 only)
+    const selectedEvents = uniqueEvents.slice(0, 20);
 
-    // 🔥 Loop through events
-    for (let event of uniqueEvents.slice(0, 5)) {
+    for (let event of selectedEvents) {
       try {
         console.log("Opening:", event.title);
 
@@ -62,7 +63,6 @@ const ExternalEvent = require("../models/ExternalEvent");
         const details = await page.evaluate(() => {
           const bodyText = document.body.innerText;
 
-          // Description
           let description = "N/A";
           const paragraphs = Array.from(document.querySelectorAll("p"));
 
@@ -74,12 +74,10 @@ const ExternalEvent = require("../models/ExternalEvent");
             }
           }
 
-          // Date
           const dateMatch = bodyText.match(
             /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec).*?\d{4}/
           );
 
-          // Tags
           const tags = Array.from(document.querySelectorAll("span"))
             .map(el => el.innerText.trim())
             .filter(text =>
@@ -100,16 +98,19 @@ const ExternalEvent = require("../models/ExternalEvent");
           };
         });
 
+        // 🔥 FILTER: ONLY upcoming events
+        const isUpcoming = details.date !== "N/A";
+
+        if (!isUpcoming) continue;
+
         const finalEvent = {
           title: event.title,
           link: event.link,
           ...details,
-          platform: "devfolio"
+          platform: "devfolio",
+          createdAt: new Date()
         };
 
-        detailedEvents.push(finalEvent);
-
-        // ✅ SAVE TO DB
         await ExternalEvent.updateOne(
           { link: finalEvent.link },
           finalEvent,
@@ -121,10 +122,7 @@ const ExternalEvent = require("../models/ExternalEvent");
       }
     }
 
-    console.log("\n🔥 Final Data:\n");
-    console.log(JSON.stringify(detailedEvents, null, 2));
-
-    console.log("✅ Saved to DB");
+    console.log("✅ Scraping complete & saved to DB");
 
     await browser.close();
     await mongoose.disconnect();
@@ -132,10 +130,9 @@ const ExternalEvent = require("../models/ExternalEvent");
   } catch (error) {
     console.error("❌ Error:", error);
   }
-})();
+}
 
-
-// 🔁 Auto scroll function
+// 🔁 AUTO SCROLL
 async function autoScroll(page) {
   await page.evaluate(async () => {
     await new Promise((resolve) => {
@@ -154,3 +151,12 @@ async function autoScroll(page) {
     });
   });
 }
+
+// 🚀 RUN ONCE (manual)
+scrapeDevfolio();
+
+// ⏰ CRON JOB (every 6 hours)
+cron.schedule("0 */6 * * *", () => {
+  console.log("⏰ Running scheduled scraper...");
+  scrapeDevfolio();
+});
