@@ -10,16 +10,7 @@ const STYLES = `
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg: #07091A;
-    --surface: rgba(255,255,255,0.04);
-    --border: rgba(255,255,255,0.08);
-    --primary: #6366F1;
-    --accent: #8B5CF6;
-    --pink: #EC4899;
-    --text: #E2E8F0;
-    --muted: #64748B;
-  }
+  .dept-login-root { --muted: var(--text-muted); }
 
   html { scroll-behavior: smooth; }
 
@@ -421,8 +412,9 @@ function DeptLogin() {
   return (
     <>
       <style>{STYLES}</style>
-      <div style={{
-        background: "#07091A",
+      <div className="dept-login-root" style={{
+        background: "var(--bg)",
+        color: "var(--text)",
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
@@ -430,6 +422,7 @@ function DeptLogin() {
         justifyContent: "center",
         padding: "24px",
         position: "relative",
+        transition: "background-color 0.3s ease, color 0.3s ease",
       }}>
         <BlobBg />
 

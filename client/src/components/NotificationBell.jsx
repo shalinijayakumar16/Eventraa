@@ -10,9 +10,9 @@ function NotificationBell({ unreadCount, onToggle }) {
         width: 38,
         height: 38,
         borderRadius: 12,
-        border: "1px solid rgba(255,255,255,0.1)",
-        background: "rgba(255,255,255,0.04)",
-        color: "#CBD5E1",
+        border: "1px solid var(--border)",
+        background: "var(--surface)",
+        color: "var(--text)",
         cursor: "pointer",
         display: "flex",
         alignItems: "center",
@@ -20,7 +20,7 @@ function NotificationBell({ unreadCount, onToggle }) {
       }}
       aria-label="Notifications"
     >
-      <Icon name="bell" size={17} color="#CBD5E1" />
+      <Icon name="bell" size={17} color="currentColor" />
       {unreadCount > 0 && (
         <span
           style={{

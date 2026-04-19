@@ -3,17 +3,6 @@ export const LANDING_STYLES = `
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg: #07091A;
-    --surface: rgba(255,255,255,0.04);
-    --border: rgba(255,255,255,0.08);
-    --primary: #6366F1;
-    --accent: #8B5CF6;
-    --pink: #EC4899;
-    --text: #E2E8F0;
-    --muted: #64748B;
-  }
-
   html { scroll-behavior: smooth; }
 
   body {
@@ -68,14 +57,14 @@ export const LANDING_STYLES = `
   .animate-rotate  { animation: rotate  20s linear infinite; }
 
   .glass {
-    background: rgba(255,255,255,0.04);
+    background: var(--surface);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--border);
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, #E2E8F0 0%, #A5B4FC 40%, #8B5CF6 70%, #EC4899 100%);
+    background: linear-gradient(135deg, var(--text) 0%, #A5B4FC 40%, #8B5CF6 70%, #EC4899 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -89,7 +78,7 @@ export const LANDING_STYLES = `
   }
 
   .btn-primary-glow {
-    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    background: var(--gradient-accent);
     color: #fff;
     border: none;
     padding: 14px 32px;
@@ -101,7 +90,7 @@ export const LANDING_STYLES = `
     position: relative;
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 24px rgba(99,102,241,0.35);
+    box-shadow: var(--shadow-soft);
     letter-spacing: 0.01em;
   }
   .btn-primary-glow::before {
@@ -113,14 +102,14 @@ export const LANDING_STYLES = `
     opacity: 0;
     transition: opacity 0.2s;
   }
-  .btn-primary-glow:hover { transform: translateY(-2px); box-shadow: 0 8px 40px rgba(99,102,241,0.55); }
+  .btn-primary-glow:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
   .btn-primary-glow:hover::before { opacity: 1; }
   .btn-primary-glow:active { transform: translateY(0); }
 
   .btn-ghost {
-    background: rgba(255,255,255,0.04);
-    color: #CBD5E1;
-    border: 1px solid rgba(255,255,255,0.12);
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
     padding: 13px 30px;
     border-radius: 12px;
     font-family: 'Outfit', sans-serif;
@@ -131,15 +120,15 @@ export const LANDING_STYLES = `
     backdrop-filter: blur(8px);
   }
   .btn-ghost:hover {
-    background: rgba(255,255,255,0.08);
+    background: var(--surface-hover);
     border-color: rgba(99,102,241,0.5);
-    color: #E2E8F0;
+    color: var(--text-strong);
     transform: translateY(-2px);
   }
 
   .feature-card {
-    background: rgba(255,255,255,0.035);
-    border: 1px solid rgba(255,255,255,0.07);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 20px;
     padding: 32px 28px;
     transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s, background 0.3s;
@@ -160,7 +149,7 @@ export const LANDING_STYLES = `
     transform: translateY(-6px) scale(1.01);
     box-shadow: 0 20px 60px rgba(99,102,241,0.18), 0 0 0 1px rgba(99,102,241,0.2);
     border-color: rgba(99,102,241,0.3);
-    background: rgba(255,255,255,0.055);
+    background: var(--surface-hover);
   }
   .feature-card:hover::before { opacity: 1; }
 
@@ -178,8 +167,8 @@ export const LANDING_STYLES = `
     gap: 24px;
     align-items: flex-start;
     padding: 28px 32px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 20px;
     transition: border-color 0.3s, background 0.3s;
   }

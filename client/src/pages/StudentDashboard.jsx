@@ -574,10 +574,10 @@ function StudentDashboard() {
     <section className="animate-fadeUp" style={{ marginBottom: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
         <div>
-          <h2 style={{ margin: 0, color: "#E2E8F0", fontFamily: "'Outfit', sans-serif", letterSpacing: "-0.01em", fontSize: 20 }}>
+          <h2 style={{ margin: 0, color: "var(--text)", fontFamily: "'Outfit', sans-serif", letterSpacing: "-0.01em", fontSize: 20 }}>
             {title}
           </h2>
-          <p style={{ margin: "4px 0 0", color: "#64748B", fontSize: 13 }}>{subtitle}</p>
+          <p style={{ margin: "4px 0 0", color: "var(--text-muted)", fontSize: 13 }}>{subtitle}</p>
         </div>
         <div style={{ color: "#94A3B8", fontSize: 12 }}>{list.length} event{list.length !== 1 ? "s" : ""}</div>
       </div>
@@ -601,7 +601,7 @@ function StudentDashboard() {
   return (
     <>
       <style>{STYLES}</style>
-      <div style={{ background: "#07091A", minHeight: "100vh", color: "#E2E8F0", position: "relative" }}>
+      <div style={{ background: "var(--bg)", minHeight: "100vh", color: "var(--text)", position: "relative", transition: "background-color 0.25s ease, color 0.25s ease" }}>
         <BlobBg />
 
         <Topbar
@@ -639,19 +639,19 @@ function StudentDashboard() {
 
           <main
             className="main-content"
-            style={{ flex: 1, padding: "40px 36px 60px", maxWidth: "calc(100vw - 260px)" }}
+            style={{ flex: 1, padding: "40px 36px 60px", maxWidth: "calc(100vw - 260px)", transition: "background-color 0.25s ease, color 0.25s ease" }}
           >
             {/* Heading */}
             <div className="animate-fadeUp" style={{ marginBottom: 28 }}>
               <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: "clamp(1.8rem, 3vw, 2.4rem)", letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 6 }}>
                 <span className="gradient-text">Discover</span>{" "}
-                <span style={{ color: "#E2E8F0" }}>Campus Events</span>
+                <span style={{ color: "var(--text)" }}>Campus Events</span>
               </h1>
-              <p style={{ color: "#64748B", fontSize: 15 }}>Browse and register for events happening across all departments</p>
+              <p style={{ color: "var(--text-muted)", fontSize: 15 }}>Browse and register for events happening across all departments</p>
               <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 12px", borderRadius: 999, border: "1px solid rgba(16,185,129,0.35)", background: "rgba(16,185,129,0.1)", color: "#6EE7B7", fontSize: 12, fontFamily: "'Outfit', sans-serif", fontWeight: 600 }}>
                 <span aria-hidden="true">✔</span> Verified Events
               </div>
-              <p style={{ color: "#475569", fontSize: 12, marginTop: 8 }}>All events are verified by admin</p>
+              <p style={{ color: "var(--text-muted)", fontSize: 12, marginTop: 8 }}>All events are verified by admin</p>
             </div>
 
             <StatsRow
@@ -665,7 +665,7 @@ function StudentDashboard() {
               <h2
                 style={{
                   margin: "0 0 8px",
-                  color: "#E2E8F0",
+                  color: "var(--text)",
                   fontFamily: "'Outfit', sans-serif",
                   letterSpacing: "-0.01em",
                   fontSize: 20,
@@ -739,7 +739,7 @@ function StudentDashboard() {
               ) : (
                 <>
                   {renderEventSection("Active Events", "Browse events that are still open for participation.", filteredActiveEvents)}
-                  <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "8px 0 20px" }} />
+                  <div style={{ height: 1, background: "var(--border)", margin: "8px 0 20px" }} />
                   {renderEventSection("Completed Events", "Ended events and events already completed via certificate.", filteredCompletedEvents)}
                 </>
               )}
@@ -751,7 +751,7 @@ function StudentDashboard() {
         {clashDialog.open && (
           <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeClashDialog(); }}>
             <div className="modal-box" style={{ maxWidth: 560 }}>
-              <div style={{ padding: "22px 26px 14px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+              <div style={{ padding: "22px 26px 14px", borderBottom: "1px solid var(--border)" }}>
                 <div style={{ color: "#FCA5A5", fontSize: 15, fontWeight: 700, marginBottom: 6 }}>
                   ⚠️ You have another event at this time
                 </div>

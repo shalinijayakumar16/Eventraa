@@ -21,7 +21,7 @@ function SearchFilterBar({
       <div className="filters-row" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
         <div style={{ position: "relative", flex: "1 1 260px", minWidth: 220 }}>
           <div style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-            <Icon name="search" size={16} color="#475569" />
+            <Icon name="search" size={16} color="var(--text-muted)" />
           </div>
           <input
             className="search-input"
@@ -58,16 +58,16 @@ function SearchFilterBar({
           value={selectedDate}
           onChange={(event) => setSelectedDate(event.target.value)}
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.09)",
-            color: selectedDate ? "#CBD5E1" : "#475569",
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            color: selectedDate ? "var(--text)" : "var(--text-muted)",
             padding: "9px 14px",
             borderRadius: 10,
             fontFamily: "'DM Sans', sans-serif",
             fontSize: 13,
             outline: "none",
             cursor: "pointer",
-            colorScheme: "dark",
+            colorScheme: "inherit",
           }}
         />
 
@@ -78,7 +78,7 @@ function SearchFilterBar({
           </button>
         )}
 
-        <div style={{ marginLeft: "auto", fontSize: 13, color: "#475569" }}>
+        <div style={{ marginLeft: "auto", fontSize: 13, color: "var(--text-muted)" }}>
           {filteredCount} event{filteredCount !== 1 ? "s" : ""}
         </div>
       </div>

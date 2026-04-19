@@ -1,13 +1,4 @@
 function EventraLogo({ size = 34, showText = true, subtitle = "", gap = 10, textSize = 19, variant = "full" }) {
-  // Landing page theme colors (matching exactly)
-  const colors = {
-    indigo: "#6366F1",
-    violet: "#8B5CF6",
-    pink: "#EC4899",
-    bg: "#07091A",
-    text: "#E2E8F0",
-  };
-
   const iconWidth = size;
   const iconHeight = size;
 
@@ -19,11 +10,11 @@ function EventraLogo({ size = 34, showText = true, subtitle = "", gap = 10, text
           width: iconWidth,
           height: iconHeight,
           borderRadius: "20%",
-          background: `linear-gradient(135deg, ${colors.indigo} 0%, ${colors.violet} 50%, ${colors.pink} 100%)`,
+          background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--pink) 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: `0 8px 32px rgba(99, 102, 241, 0.35)`,
+          boxShadow: "var(--shadow-glow)",
           color: "#fff",
           fontFamily: "'Outfit', sans-serif",
           fontWeight: 900,
@@ -56,11 +47,11 @@ function EventraLogo({ size = 34, showText = true, subtitle = "", gap = 10, text
           width: iconWidth,
           height: iconHeight,
           borderRadius: Math.round(size * 0.25),
-          background: `linear-gradient(135deg, ${colors.indigo} 0%, ${colors.violet} 50%, ${colors.pink} 100%)`,
+          background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--pink) 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: `0 4px 12px rgba(99, 102, 241, 0.3)`,
+          boxShadow: "var(--shadow-soft)",
           color: "#fff",
           fontFamily: "'Outfit', sans-serif",
           fontWeight: 800,
@@ -82,11 +73,11 @@ function EventraLogo({ size = 34, showText = true, subtitle = "", gap = 10, text
           width: iconWidth,
           height: iconHeight,
           borderRadius: Math.round(size * 0.3),
-          background: `linear-gradient(135deg, ${colors.indigo} 0%, ${colors.violet} 50%, ${colors.pink} 100%)`,
+          background: "linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--pink) 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: `0 4px 16px rgba(99, 102, 241, 0.4)`,
+          boxShadow: "var(--shadow-soft)",
           color: "#fff",
           fontFamily: "'Outfit', sans-serif",
           fontWeight: 800,
@@ -105,7 +96,7 @@ function EventraLogo({ size = 34, showText = true, subtitle = "", gap = 10, text
               fontFamily: "'Outfit', sans-serif",
               fontWeight: 700,
               fontSize: textSize,
-              background: `linear-gradient(135deg, #E2E8F0 0%, #A5B4FC 40%, ${colors.violet} 70%, ${colors.pink} 100%)`,
+              background: "linear-gradient(135deg, var(--text-strong) 0%, #A5B4FC 40%, var(--accent) 70%, var(--pink) 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               letterSpacing: "-0.02em",
@@ -116,7 +107,7 @@ function EventraLogo({ size = 34, showText = true, subtitle = "", gap = 10, text
           {subtitle ? (
             <span
               style={{
-                color: "#64748B",
+                color: "var(--text-muted)",
                 fontSize: Math.max(12, textSize - 6),
                 marginLeft: 8,
                 fontFamily: "'DM Sans', sans-serif",

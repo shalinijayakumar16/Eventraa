@@ -19,7 +19,7 @@ function Landing() {
   return (
     <>
       <style>{LANDING_STYLES}</style>
-      <div style={{ background: "#07091A", minHeight: "100vh", color: "#E2E8F0" }}>
+      <div style={{ background: "var(--bg)", minHeight: "100vh", color: "var(--text)", transition: "background-color 0.25s ease, color 0.25s ease" }}>
         <Navbar           navigate={navigate} />
         <HeroSection      navigate={navigate} />
         <TickerSection />

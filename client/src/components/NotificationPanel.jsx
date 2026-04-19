@@ -8,7 +8,7 @@ const makeDummyNotifications = () => {
   return [
     {
       _id: "local-1",
-      message: "You successfully registered for Hackathon 2026",
+      message: "New event recommendation available",
       createdAt: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
       read: false,
     },
@@ -141,8 +141,8 @@ function NotificationPanel({ open, userId, onClose, onNotificationsUpdate }) {
         right: 84,
         width: 340,
         maxWidth: "calc(100vw - 32px)",
-        background: "#0D1130",
-        border: "1px solid rgba(255,255,255,0.09)",
+        background: "var(--bg-elevated)",
+        border: "1px solid var(--border)",
         borderRadius: 16,
         zIndex: 120,
         boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
@@ -152,15 +152,15 @@ function NotificationPanel({ open, userId, onClose, onNotificationsUpdate }) {
       <div
         style={{
           padding: "14px 16px",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          borderBottom: "1px solid var(--border)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Icon name="bell" size={14} color="#A5B4FC" />
-          <strong style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, color: "#E2E8F0" }}>Notifications</strong>
+          <Icon name="bell" size={14} color="var(--accent-primary)" />
+          <strong style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, color: "var(--text)" }}>Notifications</strong>
         </div>
         <button
           type="button"
@@ -168,7 +168,7 @@ function NotificationPanel({ open, userId, onClose, onNotificationsUpdate }) {
           style={{
             border: "none",
             background: "transparent",
-            color: "#64748B",
+            color: "var(--text-muted)",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
@@ -176,27 +176,27 @@ function NotificationPanel({ open, userId, onClose, onNotificationsUpdate }) {
           }}
           aria-label="Close notifications"
         >
-          <Icon name="x" size={14} color="#64748B" />
+          <Icon name="x" size={14} color="var(--text-muted)" />
         </button>
       </div>
 
       <div style={{ maxHeight: 360, overflowY: "auto" }}>
         {loading ? (
-          <div style={{ padding: 16, color: "#94A3B8", fontSize: 13 }}>Loading notifications...</div>
+          <div style={{ padding: 16, color: "var(--text-soft)", fontSize: 13 }}>Loading notifications...</div>
         ) : notifications.length === 0 ? (
-          <div style={{ padding: 16, color: "#64748B", fontSize: 13 }}>No notifications yet</div>
+          <div style={{ padding: 16, color: "var(--text-muted)", fontSize: 13 }}>No notifications yet</div>
         ) : (
           notifications.map((item) => (
             <div
               key={item._id}
               style={{
                 padding: "12px 14px",
-                borderBottom: "1px solid rgba(255,255,255,0.05)",
+                borderBottom: "1px solid var(--border)",
                 background: item.read ? "transparent" : "rgba(99,102,241,0.08)",
               }}
             >
-              <div style={{ color: "#CBD5E1", fontSize: 13, lineHeight: 1.5 }}>{item.message}</div>
-              <div style={{ marginTop: 6, color: "#64748B", fontSize: 11 }}>{toRelativeTime(item.createdAt)}</div>
+              <div style={{ color: "var(--text)", fontSize: 13, lineHeight: 1.5 }}>{item.message}</div>
+              <div style={{ marginTop: 6, color: "var(--text-muted)", fontSize: 11 }}>{toRelativeTime(item.createdAt)}</div>
             </div>
           ))
         )}

@@ -50,9 +50,9 @@ function EventCard({
             alt="poster"
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(7,9,26,0.7), transparent)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, color-mix(in srgb, var(--bg) 70%, transparent), transparent)" }} />
           {isPast && (
-            <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", fontSize: 11, color: "#94A3B8", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(255,255,255,0.1)" }}>Past</div>
+            <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "color-mix(in srgb, var(--bg) 50%, transparent)", backdropFilter: "blur(8px)", fontSize: 11, color: "var(--text-soft)", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid var(--border)" }}>Past</div>
           )}
           {isCompleted && !isPast && (
             <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(34,197,94,0.16)", backdropFilter: "blur(8px)", fontSize: 11, color: "#86EFAC", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(34,197,94,0.25)" }}>Completed 🎉</div>
@@ -67,7 +67,7 @@ function EventCard({
         <div style={{ height: 120, background: "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(236,72,153,0.08))", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
           <Icon name="calendar" size={32} color="rgba(99,102,241,0.3)" />
           {isPast && (
-            <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(0,0,0,0.3)", fontSize: 11, color: "#64748B", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(255,255,255,0.07)" }}>Past</div>
+            <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "color-mix(in srgb, var(--bg) 30%, transparent)", fontSize: 11, color: "var(--text-muted)", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid var(--border)" }}>Past</div>
           )}
           {isCompleted && !isPast && (
             <div style={{ position: "absolute", top: 10, right: 10, padding: "3px 10px", borderRadius: 999, background: "rgba(34,197,94,0.14)", fontSize: 11, color: "#86EFAC", fontFamily: "'Outfit', sans-serif", fontWeight: 600, border: "1px solid rgba(34,197,94,0.22)" }}>Completed 🎉</div>
@@ -84,7 +84,7 @@ function EventCard({
       <div style={{ padding: "18px 18px 14px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
         {/* Title + badge */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-          <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 15, color: "#E2E8F0", letterSpacing: "-0.01em", lineHeight: 1.3 }}>
+          <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 15, color: "var(--text)", letterSpacing: "-0.01em", lineHeight: 1.3 }}>
             {event.title}
           </h3>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
@@ -106,8 +106,8 @@ function EventCard({
                 width: 30,
                 height: 30,
                 borderRadius: 8,
-                border: isSaved ? "1px solid rgba(245,158,11,0.5)" : "1px solid rgba(255,255,255,0.1)",
-                background: isSaved ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.04)",
+                border: isSaved ? "1px solid rgba(245,158,11,0.5)" : "1px solid var(--border)",
+                background: isSaved ? "rgba(245,158,11,0.15)" : "var(--surface)",
                 cursor: wishlistLoading ? "not-allowed" : "pointer",
                 display: "flex",
                 alignItems: "center",
@@ -122,22 +122,22 @@ function EventCard({
 
         {/* Meta */}
         <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#94A3B8", fontSize: 13 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--text-muted)", fontSize: 13 }}>
             <Icon name="filter" size={13} color="#6366F1" />
             {event.department}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#94A3B8", fontSize: 13 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--text-muted)", fontSize: 13 }}>
             <Icon name="calendar" size={13} color="#8B5CF6" />
             {new Date(event.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
           </div>
           {event.applyBy && (
-            <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#94A3B8", fontSize: 13 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--text-muted)", fontSize: 13 }}>
               <Icon name="clock" size={13} color="#F59E0B" />
               Apply by {new Date(event.applyBy).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
             </div>
           )}
           {event.venue && (
-            <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#94A3B8", fontSize: 13 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, color: "var(--text-muted)", fontSize: 13 }}>
               <Icon name="map" size={13} color="#EC4899" />
               {event.venue}
             </div>
@@ -152,7 +152,7 @@ function EventCard({
         )}
 
         {/* Buttons */}
-        <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)", display: "grid", gap: 8 }}>
+        <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid var(--border)", display: "grid", gap: 8 }}>
           {canDownloadCertificate && (
             <button
               className="btn-ghost"

@@ -54,13 +54,13 @@ function HeroSection({ navigate }) {
         }}>
           <span className="gradient-text">Where Campus</span>
           <br/>
-          <span style={{ color: "#E2E8F0" }}>Events Come</span>{" "}
+          <span style={{ color: "var(--text)" }}>Events Come</span>{" "}
           <span className="gradient-text-brand">Alive</span>
         </h1>
 
         {/* Subtitle */}
         <p className="animate-fadeUp" style={{
-          fontSize: "clamp(1rem, 2.5vw, 1.2rem)", color: "#94A3B8",
+          fontSize: "clamp(1rem, 2.5vw, 1.2rem)", color: "var(--text-muted)",
           lineHeight: 1.7, maxWidth: 540, margin: "0 auto 44px",
           fontFamily: "'DM Sans', sans-serif", animationDelay: "0.35s",
         }}>
@@ -86,14 +86,14 @@ function HeroSection({ navigate }) {
               <div key={i} style={{
                 width: 32, height: 32, borderRadius: "50%",
                 background: `linear-gradient(135deg, ${c}, ${c}cc)`,
-                border: "2px solid #07091A",
+                border: "2px solid var(--bg)",
                 marginLeft: i === 0 ? 0 : -10,
                 boxShadow: `0 2px 8px ${c}66`,
               }}/>
             ))}
           </div>
-          <p style={{ color: "#64748B", fontSize: 13, fontFamily: "'DM Sans', sans-serif" }}>
-            Trusted by <strong style={{ color: "#94A3B8" }}>2,400+</strong> students across 18 departments
+          <p style={{ color: "var(--text-muted)", fontSize: 13, fontFamily: "'DM Sans', sans-serif" }}>
+            Trusted by <strong style={{ color: "var(--text-soft)" }}>2,400+</strong> students across 18 departments
           </p>
         </div>
       </div>
@@ -101,7 +101,7 @@ function HeroSection({ navigate }) {
       {/* Bottom fade */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, height: 120,
-        background: "linear-gradient(to top, #07091A, transparent)", pointerEvents: "none",
+        background: "linear-gradient(to top, var(--bg), transparent)", pointerEvents: "none",
       }}/>
     </section>
   );

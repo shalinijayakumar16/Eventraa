@@ -13,16 +13,7 @@ const STYLES = `
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg: #07091A;
-    --surface: rgba(255,255,255,0.04);
-    --border: rgba(255,255,255,0.08);
-    --primary: #6366F1;
-    --accent: #8B5CF6;
-    --pink: #EC4899;
-    --text: #E2E8F0;
-    --muted: #64748B;
-  }
+  .dept-dashboard-root { --muted: var(--text-muted); }
 
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
 
@@ -701,7 +692,7 @@ function DeptDashboard() {
   return (
     <>
       <style>{STYLES}</style>
-      <div style={{ background:"#07091A", minHeight:"100vh", color:"#E2E8F0", position:"relative" }}>
+      <div className="dept-dashboard-root" style={{ background:"var(--bg)", minHeight:"100vh", color:"var(--text)", position:"relative", transition:"background-color 0.3s ease, color 0.3s ease" }}>
         <BlobBg />
 
         {/* ── Topbar ── */}

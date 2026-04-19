@@ -39,9 +39,9 @@ function FeaturesSection() {
           </div>
           <h2 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: "clamp(2rem, 5vw, 2.8rem)", letterSpacing: "-0.03em", lineHeight: 1.15, marginBottom: 16 }}>
             <span className="gradient-text">Everything you need,</span>
-            <br/><span style={{ color: "#E2E8F0" }}>nothing you don't</span>
+            <br/><span style={{ color: "var(--text)" }}>nothing you don't</span>
           </h2>
-          <p style={{ color: "#64748B", fontSize: 16, maxWidth: 480, margin: "0 auto", lineHeight: 1.65 }}>
+          <p style={{ color: "var(--text-muted)", fontSize: 16, maxWidth: 480, margin: "0 auto", lineHeight: 1.65 }}>
             Built for students who want to experience more of campus life without the chaos.
           </p>
         </div>
@@ -53,8 +53,8 @@ function FeaturesSection() {
               <div className="icon-box" style={{ background: f.gradient, boxShadow: `0 8px 24px ${f.glow}` }}>
                 <Icon name={f.icon} size={22} color={f.iconColor} />
               </div>
-              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 17, color: "#E2E8F0", marginBottom: 10, letterSpacing: "-0.01em" }}>{f.label}</h3>
-              <p style={{ color: "#64748B", fontSize: 14, lineHeight: 1.65 }}>{f.desc}</p>
+              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 17, color: "var(--text)", marginBottom: 10, letterSpacing: "-0.01em" }}>{f.label}</h3>
+              <p style={{ color: "var(--text-muted)", fontSize: 14, lineHeight: 1.65 }}>{f.desc}</p>
             </div>
           ))}
         </div>

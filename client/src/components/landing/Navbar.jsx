@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import Icon from "../icon";
 import EventraLogo from "../EventraLogo";
+import ThemeToggle from "../ThemeToggle";
 
 function Navbar({ navigate }) {
   const [scrolled, setScrolled] = useState(false);
@@ -17,9 +17,9 @@ function Navbar({ navigate }) {
       padding: "0 24px", height: 68,
       display: "flex", alignItems: "center", justifyContent: "space-between",
       transition: "background 0.4s, border-bottom 0.4s, backdrop-filter 0.4s",
-      background: scrolled ? "rgba(7,9,26,0.85)" : "transparent",
+      background: scrolled ? "color-mix(in srgb, var(--bg) 85%, transparent)" : "transparent",
       backdropFilter: scrolled ? "blur(24px)" : "none",
-      borderBottom: scrolled ? "1px solid rgba(255,255,255,0.07)" : "1px solid transparent",
+      borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
     }}>
       {/* Logo */}
       <EventraLogo textSize={20} />
@@ -30,15 +30,16 @@ function Navbar({ navigate }) {
           <a
             key={link}
             href={`#${link.toLowerCase().replace(/ /g, "-")}`}
-            style={{ color: "#94A3B8", textDecoration: "none", fontSize: 14, fontFamily: "'DM Sans', sans-serif", fontWeight: 500, transition: "color 0.2s" }}
-            onMouseEnter={e => e.target.style.color = "#E2E8F0"}
-            onMouseLeave={e => e.target.style.color = "#94A3B8"}
+            style={{ color: "var(--text-muted)", textDecoration: "none", fontSize: 14, fontFamily: "'DM Sans', sans-serif", fontWeight: 500, transition: "color 0.2s" }}
+            onMouseEnter={e => e.target.style.color = "var(--text-strong)"}
+            onMouseLeave={e => e.target.style.color = "var(--text-muted)"}
           >{link}</a>
         ))}
       </div>
 
       {/* CTA buttons */}
       <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <ThemeToggle />
         <button onClick={() => navigate("/login")} className="btn-ghost" style={{ padding: "9px 20px", fontSize: 14 }}>
           Log In
         </button>
