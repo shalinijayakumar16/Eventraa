@@ -12,6 +12,7 @@ export const TYPE_STYLE = {
 
 export const TABS = [
   { id: "all",        label: "All Events",  icon: "list"     },
+  { id: "external",   label: "Other College Events", icon: "zap" },
   { id: "registered", label: "Registered",  icon: "check"    },
   { id: "upcoming",   label: "Upcoming",    icon: "trending" },
   { id: "completed",  label: "Completed",   icon: "star"     },

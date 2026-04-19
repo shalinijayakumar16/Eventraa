@@ -21,6 +21,7 @@ import RegistrationModal from "../components/RegistrationModal";
 import NotificationPanel from "../components/NotificationPanel";
 import ParticipationHistory from "../components/ParticipationHistory";
 import ChatbotWidget from "../components/ChatbotWidget";
+import ExternalEvents from "../components/ExternalEvents";
 import { openGoogleCalendar } from "../utils/googleCalendar";
 import { apiUrl } from "../constants/api";
 
@@ -64,6 +65,7 @@ function StudentDashboard() {
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [externalEventsCount, setExternalEventsCount] = useState(0);
 
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
@@ -496,6 +498,7 @@ function StudentDashboard() {
 
   const tabCounts = {
     all:        events.length,
+    external:   externalEventsCount,
     registered: registeredIds.size,
     upcoming:   events.filter(e => new Date(e.date) >= now).length,
     completed:  completedEvents.length,
@@ -691,7 +694,7 @@ function StudentDashboard() {
                 tabCounts={tabCounts}
               />
 
-              {activeTab !== "wishlist" && (
+              {activeTab !== "wishlist" && activeTab !== "external" && (
                 <SearchFilterBar
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
@@ -721,6 +724,8 @@ function StudentDashboard() {
                   onAddToCalendar={handleAddToCalendar}
                   onToggleWishlist={handleToggleWishlist}
                 />
+              ) : activeTab === "external" ? (
+                <ExternalEvents onCountChange={setExternalEventsCount} />
               ) : activeTab === "completed" ? (
                 renderEventSection("Completed Events", "Events that have ended or already have certificates generated for you.", filteredCompletedEvents)
               ) : activeTab === "upcoming" ? (
