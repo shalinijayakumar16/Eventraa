@@ -33,6 +33,8 @@ app.use("/api/certificates", require("./routes/certificateRoutes"));
 app.use("/api/chatbot", require("./routes/chatbotRoutes"));
 app.use("/api/student", require("./routes/studentRoutes"));
 app.use("/api/recommendations", require("./routes/recommendationRoutes"));
+// ✅ NEW: External Events from other colleges
+app.use("/api/external-events", require("./routes/externalEventRoutes"));
 
 const normalizeLegacyEventStatuses = async () => {
   try {
